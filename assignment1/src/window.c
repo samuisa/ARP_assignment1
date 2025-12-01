@@ -13,6 +13,8 @@
 
 static int current_x = 1;
 static int current_y = 1;
+static float Fx = 0.0f;
+static float Fy = 0.0f;
 static Point *obstacles = NULL;
 static int num_obstacles = 0;
 static Point *targets = NULL;
@@ -115,17 +117,18 @@ void reposition_and_redraw(WINDOW **win_ptr) {
 
 
 int main(int argc, char *argv[]) {
-    if (argc < 8) {
-        fprintf(stderr, "Usage: %s <pipe_fd_input> <fd_drone_read> <fd_drone_write> <fd_obst_read> <fd_obst_write>\n", argv[0]);
+    if (argc < 9) {
+        fprintf(stderr, "Usage: %s <pipe_fd_input_read> <pipe_fd_input_write> <fd_drone_read> <fd_drone_write> <fd_obst_read> <fd_obst_write>\n", argv[0]);
         return 1;
     }
     int fd_input_read  = atoi(argv[1]);
-    int fd_drone_read  = atoi(argv[2]);
-    int fd_drone_write = atoi(argv[3]);
-    int fd_obst_write  = atoi(argv[4]);
-    int fd_obst_read   = atoi(argv[5]);
-    int fd_targ_write  = atoi(argv[6]);
-    int fd_targ_read   = atoi(argv[7]);
+    int fd_input_write  = atoi(argv[2]);
+    int fd_drone_read  = atoi(argv[3]);
+    int fd_drone_write = atoi(argv[4]);
+    int fd_obst_write  = atoi(argv[5]);
+    int fd_obst_read   = atoi(argv[6]);
+    int fd_targ_write  = atoi(argv[7]);
+    int fd_targ_read   = atoi(argv[8]);
 
     initscr();
     cbreak();
@@ -199,9 +202,20 @@ int main(int argc, char *argv[]) {
                         }
                         break;
                     }
+
+                    case MSG_TYPE_FORCE: {
+                        if (sscanf(msg.data, "%f %f", &Fx, &Fy) == 2) {
+                            //msg.type = MSG_TYPE_FORCE;
+                            write(fd_input_write, msg, sizeof(msg));
+                        }
+                        break;
+                    }
+
                     default:
                         break;
+                    
                 }
+                
             } else if (n < 0 && errno != EAGAIN && errno != EWOULDBLOCK) {
                 perror("read fd_drone_read");
                 break;

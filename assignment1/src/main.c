@@ -36,7 +36,7 @@ int main() {
 
     // -- PIPE --
     int pipe_input_window[2];
-    //int pipe_window_input[2];
+    int pipe_window_input[2];
     int pipe_window_drone[2];
     int pipe_drone_window[2];
     int pipe_window_obstacle[2];
@@ -45,6 +45,7 @@ int main() {
     int pipe_target_window[2];
 
     if (pipe(pipe_input_window) == -1 ||
+        pipe(pipe_window_input) == -1 ||
         pipe(pipe_window_drone) == -1 ||
         pipe(pipe_drone_window) == -1 ||
         pipe(pipe_window_obstacle) == -1 ||
@@ -59,7 +60,7 @@ int main() {
     pid_t pid_input = fork();
     if (pid_input == 0) {
         // chiudo pipe non usate
-        close(pipe_input_window[0]);
+        close(pipe_input_window[0]); close(pipe_window_input[1]);
         close(pipe_window_drone[0]); close(pipe_window_drone[1]);
         close(pipe_drone_window[0]); close(pipe_drone_window[1]);
         close(pipe_window_obstacle[0]); close(pipe_window_obstacle[1]);
@@ -68,11 +69,12 @@ int main() {
         close(pipe_target_window[0]); close(pipe_target_window[1]);
 
         char fd_write_str[16];
-        //char fd_read_str[16];
+        char fd_read_str[16];
+        
         snprintf(fd_write_str, sizeof(fd_write_str), "%d", pipe_input_window[1]);
-        //snprintf(fd_read_str, sizeof(fd_read_str), "%d", pipe_window_input[0]);
+        snprintf(fd_read_str, sizeof(fd_read_str), "%d", pipe_window_input[0]);
 
-        execlp("konsole", "konsole", "-e", "./eseguibili/input", fd_write_str, NULL);
+        execlp("konsole", "konsole", "-e", "./eseguibili/input", fd_write_str, fd_read_str, NULL);
         perror("exec input");
         exit(1);
     }
@@ -82,6 +84,7 @@ int main() {
     if (pid_obst == 0) {
         close(pipe_window_obstacle[1]);
         close(pipe_input_window[0]); close(pipe_input_window[1]);
+        close(pipe_window_input[0]); close(pipe_window_input[1]);
         close(pipe_window_drone[0]); close(pipe_window_drone[1]);
         close(pipe_drone_window[0]); close(pipe_drone_window[1]);
         close(pipe_window_target[0]); close(pipe_window_target[1]);
@@ -109,6 +112,7 @@ int main() {
     if(pid_target == 0){
         // chiudo pipe non usate
         close(pipe_input_window[0]); close(pipe_input_window[0]);
+        close(pipe_window_input[0]); close(pipe_window_input[1]);
         close(pipe_window_drone[0]); close(pipe_window_drone[1]);
         close(pipe_drone_window[0]); close(pipe_drone_window[1]);
         close(pipe_window_obstacle[0]); close(pipe_window_obstacle[1]);
@@ -130,6 +134,7 @@ int main() {
     pid_t pid_window = fork();
     if (pid_window == 0) {
         close(pipe_input_window[1]);
+        close(pipe_window_input[0]);
         close(pipe_drone_window[1]);
         close(pipe_window_drone[0]);
         close(pipe_window_obstacle[0]);
@@ -139,9 +144,10 @@ int main() {
 
         char fd_in_input_str[16], fd_in_drone_str[16], fd_out_drone_str[16];
         char fd_out_obst_str[16], fd_in_obst_str[16], fd_in_targ_str[16], fd_out_targ_str[16];
-        //char fd_out_input_str[16];
+        char fd_out_input_str[16];
 
         snprintf(fd_in_input_str, sizeof(fd_in_input_str), "%d", pipe_input_window[0]);
+        snprintf(fd_out_input_str, sizeof(fd_out_input_str), "%d", pipe_window_input[1]);
         snprintf(fd_in_drone_str, sizeof(fd_in_drone_str), "%d", pipe_drone_window[0]);
         snprintf(fd_out_drone_str, sizeof(fd_out_drone_str), "%d", pipe_window_drone[1]);
         snprintf(fd_out_obst_str, sizeof(fd_out_obst_str), "%d", pipe_window_obstacle[1]);
@@ -151,7 +157,7 @@ int main() {
 
         execlp("konsole", "konsole", "-e",
                "./eseguibili/window",
-               fd_in_input_str, fd_in_drone_str,
+               fd_in_input_str, fd_out_input_str, fd_in_drone_str,
                fd_out_drone_str, fd_out_obst_str,
                fd_in_obst_str, fd_out_targ_str,
                fd_in_targ_str,
@@ -164,6 +170,7 @@ int main() {
     // -------- PROCESSO DRONE --------
     pid_t pid_drone = fork();
     if (pid_drone == 0) {
+        close(pipe_window_input[0]); close(pipe_window_input[1]);
         close(pipe_window_drone[1]);
         close(pipe_window_obstacle[0]); close(pipe_window_obstacle[1]);
         close(pipe_input_window[0]); close(pipe_input_window[1]);
@@ -189,6 +196,7 @@ int main() {
 
     // -------- PARENT --------
     close(pipe_input_window[0]); close(pipe_input_window[1]);
+    close(pipe_window_input[0]); close(pipe_window_input[1]);
     close(pipe_window_drone[0]); close(pipe_window_drone[1]);
     close(pipe_drone_window[0]); close(pipe_drone_window[1]);
     close(pipe_window_obstacle[0]); close(pipe_window_obstacle[1]);
