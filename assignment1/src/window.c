@@ -120,12 +120,12 @@ int main(int argc, char *argv[]) {
         return 1;
     }
     int fd_input_read  = atoi(argv[1]);
-    int fd_drone_read  = atoi(argv[3]);
-    int fd_drone_write = atoi(argv[4]);
-    int fd_obst_write  = atoi(argv[5]);
-    int fd_obst_read   = atoi(argv[6]);
-    int fd_targ_write  = atoi(argv[7]);
-    int fd_targ_read   = atoi(argv[8]);
+    int fd_drone_read  = atoi(argv[2]);
+    int fd_drone_write = atoi(argv[3]);
+    int fd_obst_write  = atoi(argv[4]);
+    int fd_obst_read   = atoi(argv[5]);
+    int fd_targ_write  = atoi(argv[6]);
+    int fd_targ_read   = atoi(argv[7]);
 
     initscr();
     cbreak();
