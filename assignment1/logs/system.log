@@ -1,19 +1,58 @@
-[2025-12-03 21:36:06] (PID 4272)  [MAIN] PROGRAM STARTED
-[2025-12-03 21:36:06] (PID 4272)  [MAIN] Main program running
-[2025-12-03 21:36:06] (PID 4274) [OBST] Avviato (fd_in=9, fd_out=12)
-[2025-12-03 21:36:06] (PID 4275) [TARG] Avviato (fd_in=13, fd_out=16)
-[2025-12-03 21:36:07] (PID 4304)  [WIN] main avviato
-[2025-12-03 21:36:07] (PID 4274) [OBST] Generati 13 ostacoli per grid 100x28
-[2025-12-03 21:36:07] (PID 4275) [TARG] Ricevute dimensioni finestra 100x28
-[2025-12-03 21:36:07] (PID 4274) [OBST] Inviati 13 ostacoli a window (width=100 height=28)
-[2025-12-03 21:36:07] (PID 4275) [TARG] Ricevuti 13 ostacoli
-[2025-12-03 21:36:07] (PID 4275) [TARG] Generati 3 target per grid 100x28
-[2025-12-03 21:36:07] (PID 4275) [TARG] Inviati 3 target a window
-[2025-12-03 21:36:07] (PID 4277) [DRONE] Initial drone position: (x = 50.000000, y = 14.000000)
-
-[2025-12-03 21:36:32] (PID 4304)  [WIN] main terminato
-[2025-12-03 21:36:32] (PID 4275) [TARG] Pipe chiusa da window, termino.
-[2025-12-03 21:36:32] (PID 4274) [OBST] Pipe chiusa da window, termino.
-[2025-12-03 21:36:32] (PID 4274) [OBST] Terminato correttamente.
-[2025-12-03 21:36:32] (PID 4275) [TARG] Terminato correttamente.
-[2025-12-03 21:36:32] (PID 4272)  [MAIN] PROGRAM EXIT
+[2025-12-04 11:30:37] (PID 24780) [MAIN] PROGRAM STARTED
+[2025-12-04 11:30:37] (PID 24780) [MAIN] Main program running
+[2025-12-04 11:30:37] (PID 24783) [TARG] Avviato (fd_in=13, fd_out=16)
+[2025-12-04 11:30:37] (PID 24782) [OBST] Avviato (fd_in=9, fd_out=12)
+[2025-12-04 11:30:38] (PID 24818) [BB] main avviato
+[2025-12-04 11:30:38] (PID 24782) [OBST] Generati 24 ostacoli per grid 105x49
+[2025-12-04 11:30:38] (PID 24783) [TARG] Ricevute dimensioni finestra 105x49
+[2025-12-04 11:30:38] (PID 24782) [OBST] Inviati 24 ostacoli a blackboard (width=105 height=49)
+[2025-12-04 11:30:38] (PID 24785) [DRONE] Initial drone position: (x = 52.500000, y = 24.500000)
+[2025-12-04 11:30:38] (PID 24783) [TARG] Ricevuti 24 ostacoli
+[2025-12-04 11:30:38] (PID 24783) [TARG] Generati 5 target per grid 105x49
+[2025-12-04 11:30:38] (PID 24783) [TARG] Inviati 5 target a blackboard
+[2025-12-04 11:30:46] (PID 24785) [DRONE] Input not recognized
+[2025-12-04 11:30:46] (PID 24785) [DRONE] Input not recognized
+[2025-12-04 11:30:46] (PID 24785) [DRONE] Input not recognized
+[2025-12-04 11:30:46] (PID 24785) [DRONE] Input not recognized
+[2025-12-04 11:30:46] (PID 24785) [DRONE] Input not recognized
+[2025-12-04 11:30:46] (PID 24785) [DRONE] Input not recognized
+[2025-12-04 11:30:46] (PID 24785) [DRONE] Input not recognized
+[2025-12-04 11:30:46] (PID 24785) [DRONE] Input not recognized
+[2025-12-04 11:30:46] (PID 24785) [DRONE] Input not recognized
+[2025-12-04 11:30:46] (PID 24785) [DRONE] Input not recognized
+[2025-12-04 11:30:46] (PID 24785) [DRONE] Input not recognized
+[2025-12-04 11:30:46] (PID 24785) [DRONE] Input not recognized
+[2025-12-04 11:30:46] (PID 24785) [DRONE] Input not recognized
+[2025-12-04 11:30:46] (PID 24785) [DRONE] Input not recognized
+[2025-12-04 11:30:46] (PID 24785) [DRONE] Input not recognized
+[2025-12-04 11:30:46] (PID 24785) [DRONE] Input not recognized
+[2025-12-04 11:30:46] (PID 24785) [DRONE] Input not recognized
+[2025-12-04 11:30:46] (PID 24785) [DRONE] Input not recognized
+[2025-12-04 11:30:46] (PID 24785) [DRONE] Input not recognized
+[2025-12-04 11:30:46] (PID 24785) [DRONE] Input not recognized
+[2025-12-04 11:30:46] (PID 24785) [DRONE] Input not recognized
+[2025-12-04 11:30:46] (PID 24785) [DRONE] Input not recognized
+[2025-12-04 11:30:46] (PID 24785) [DRONE] Input not recognized
+[2025-12-04 11:30:46] (PID 24785) [DRONE] Input not recognized
+[2025-12-04 11:30:46] (PID 24785) [DRONE] Input not recognized
+[2025-12-04 11:30:46] (PID 24785) [DRONE] Input not recognized
+[2025-12-04 11:30:46] (PID 24785) [DRONE] Input not recognized
+[2025-12-04 11:30:46] (PID 24785) [DRONE] Input not recognized
+[2025-12-04 11:30:46] (PID 24785) [DRONE] Input not recognized
+[2025-12-04 11:30:47] (PID 24785) [DRONE] Input not recognized
+[2025-12-04 11:30:47] (PID 24785) [DRONE] Input not recognized
+[2025-12-04 11:30:47] (PID 24785) [DRONE] Input not recognized
+[2025-12-04 11:30:47] (PID 24785) [DRONE] Input not recognized
+[2025-12-04 11:30:47] (PID 24785) [DRONE] Input not recognized
+[2025-12-04 11:30:47] (PID 24785) [DRONE] Input not recognized
+[2025-12-04 11:30:47] (PID 24785) [DRONE] Input not recognized
+[2025-12-04 11:30:47] (PID 24785) [DRONE] Input not recognized
+[2025-12-04 11:30:47] (PID 24785) [DRONE] Input not recognized
+[2025-12-04 11:30:47] (PID 24785) [DRONE] Input not recognized
+[2025-12-04 11:30:50] (PID 24785) [DRONE] Input received, force updated, command: f, Fx = 1.000000, Fy = 0.000000
+[2025-12-04 11:31:17] (PID 24818) [BB] main terminato
+[2025-12-04 11:31:17] (PID 24782) [OBST] Pipe chiusa da blackboard, termino.
+[2025-12-04 11:31:17] (PID 24783) [TARG] Pipe chiusa da blackboard, termino.
+[2025-12-04 11:31:17] (PID 24782) [OBST] Terminato correttamente.
+[2025-12-04 11:31:17] (PID 24783) [TARG] Terminato correttamente.
+[2025-12-04 11:31:17] (PID 24780) [MAIN] PROGRAM EXIT

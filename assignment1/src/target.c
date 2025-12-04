@@ -104,7 +104,7 @@ int main(int argc, char *argv[]) {
             ssize_t n = read(fd_in, &msg, sizeof(msg));
 
             if (n == 0) {
-                logMessage(LOG_PATH, "[TARG] Pipe chiusa da window, termino.");
+                logMessage(LOG_PATH, "[TARG] Pipe chiusa da blackboard, termino.");
                 break;
             }
 
@@ -182,7 +182,7 @@ int main(int argc, char *argv[]) {
                         write(fd_out, &out_msg, sizeof(out_msg));
                         write(fd_out, arr, sizeof(Point) * num_targ);
 
-                        logMessage(LOG_PATH, "[TARG] Inviati %d target a window", num_targ);
+                        logMessage(LOG_PATH, "[TARG] Inviati %d target a blackboard", num_targ);
 
                         free(arr);
                     } else {

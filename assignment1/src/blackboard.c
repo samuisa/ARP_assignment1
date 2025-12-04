@@ -5,7 +5,7 @@
 #include <fcntl.h>
 #include <string.h>
 #include <errno.h>
-#include "app_window.h"
+#include "app_blackboard.h"
 #include "app_common.h"
 #include "log.h"
 
@@ -116,7 +116,7 @@ void reposition_and_redraw(WINDOW **win_ptr) {
 
 int main(int argc, char *argv[]) {
     if (argc < 8) {
-        fprintf(stderr, "Usage: %s <pipe_fd_input_read> <pipe_fd_input_write> <fd_drone_read> <fd_drone_write> <fd_obst_read> <fd_obst_write>\n", argv[0]);
+        fprintf(stderr, "Usage: %s <pipe_fd_input_read> <fd_drone_read> <fd_drone_write> <fd_obst_read> <fd_obst_write>\n", argv[0]);
         return 1;
     }
     int fd_input_read  = atoi(argv[1]);
@@ -134,7 +134,7 @@ int main(int argc, char *argv[]) {
     keypad(stdscr, TRUE);
     timeout(0);
 
-    logMessage(LOG_PATH, " [WIN] main avviato");
+    logMessage(LOG_PATH, "[BB] main avviato");
     WINDOW *win = create_window(HEIGHT, WIDTH, 0, 0);
     reposition_and_redraw(&win);
     send_window_size(win, fd_drone_write, fd_obst_write, fd_targ_write);
@@ -310,6 +310,6 @@ int main(int argc, char *argv[]) {
     close(fd_drone_write);
     close(fd_obst_read);
     close(fd_obst_write);
-    logMessage(LOG_PATH, " [WIN] main terminato");
+    logMessage(LOG_PATH, "[BB] main terminato");
     return 0;
 }

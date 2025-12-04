@@ -1,5 +1,5 @@
 # =========================================================
-# Makefile per il progetto con moduli multipli (drone, window, ecc.)
+# Makefile per il progetto con moduli multipli (drone, blackboard, ecc.)
 # =========================================================
 
 # Compilatore e flag
@@ -10,14 +10,14 @@ LDFLAGS = -lm
 # Cartelle
 SRCDIR  = src
 OBJDIR  = obj
-BINDIR  = eseguibili
+BINDIR  = exec
 LOGDIR  = logs
 
 # File oggetto comuni
 OBJS_COMMON = $(OBJDIR)/log.o
 
 # Target principali
-TARGETS = main drone obstacle window input target
+TARGETS = main drone obstacle blackboard input target
 
 # =========================================================
 # Regola principale
@@ -32,7 +32,7 @@ $(OBJDIR)/%.o: $(SRCDIR)/%.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
 # =========================================================
-# Regole per gli eseguibili
+# Regole per gli exec
 # =========================================================
 main: $(SRCDIR)/main.c $(OBJS_COMMON)
 	@mkdir -p $(BINDIR)
@@ -46,7 +46,7 @@ obstacle: $(SRCDIR)/obstacle.c $(OBJS_COMMON)
 	@mkdir -p $(BINDIR)
 	$(CC) $(CFLAGS) $^ -o $(BINDIR)/$@ $(LDFLAGS)
 
-window: $(SRCDIR)/window.c $(OBJS_COMMON)
+blackboard: $(SRCDIR)/blackboard.c $(OBJS_COMMON)
 	@mkdir -p $(BINDIR)
 	$(CC) $(CFLAGS) $^ -o $(BINDIR)/$@ -lncursesw
 

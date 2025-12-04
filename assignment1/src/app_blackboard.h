@@ -1,5 +1,5 @@
-#ifndef APP_WINDOW_H
-#define APP_WINDOW_H
+#ifndef APP_BLACKBOARD_H
+#define APP_BLACKBOARD_H
 
 #define WIDTH  120
 #define HEIGHT 40

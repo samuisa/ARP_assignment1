@@ -44,7 +44,7 @@ int main(int argc, char *argv[]) {
                     if(!spawned){
                         drn.x = win_width  / 2.0;
                         drn.y = win_height / 2.0;
-                        logMessage(LOG_PATH, "[DRONE] Initial drone position: (x = %f, y = %f)\n", drn.x, drn.y);
+                        logMessage(LOG_PATH, "[DRONE] Initial drone position: (x = %f, y = %f)", drn.x, drn.y);
                         drn.x_1 = drn.x_2 = drn.x;
                         drn.y_1 = drn.y_2 = drn.y;
                         spawned = true;
@@ -55,6 +55,7 @@ int main(int argc, char *argv[]) {
 
                 case MSG_TYPE_INPUT: {
                     char ch = msg.data[0];
+                    bool isValid = true;
 
                     if (ch == 'q') goto quit;
 
@@ -71,18 +72,26 @@ int main(int argc, char *argv[]) {
                         case 'd':
                             drn.Fx *= 0.5f;
                             drn.Fy *= 0.5f;
-                            if(drn.Fx <= 0.5f){
+                            
+                            if(fabs(drn.Fx) <= 0.5f){
                                 drn.Fx = 0.0f;
                             }
-                            if(drn.Fy <= 0.5f){
+                            if(fabs(drn.Fy) <= 0.5f){
                                 drn.Fy = 0.0f;
                             }
                             break;
 
                         default:
+                            isValid = false;
                             break;
                     }
-
+                    if(isValid){
+                        logMessage(LOG_PATH, "[DRONE] Input received, force updated, command: %c, Fx = %f, Fy = %f", ch, drn.Fx, drn.Fy);
+                    }
+                    else{
+                        logMessage(LOG_PATH, "[DRONE] Input not recognized");
+                    }
+                    
                     break;
                 }
 
@@ -188,14 +197,12 @@ int main(int argc, char *argv[]) {
 
         drn.Fx = totFx;
         drn.Fy = totFy;
+        
 
         // -------------------------------
         // SEND UPDATED POSITION
         // -------------------------------
         send_position(msg, (int)drn.x, (int)drn.y, fd_out);
-        /*msg.type = MSG_TYPE_FORCE;
-        snprintf(msg.data, sizeof(msg.data), "%f %f", drn.Fx, drn.Fy);
-        write(fd_out, msg.data, sizeof(msg.data));*/
 
         usleep(1000);
     }

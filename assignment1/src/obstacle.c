@@ -85,7 +85,7 @@ int main(int argc, char *argv[]) {
             ssize_t n = read(fd_in, &msg, sizeof(msg));
 
             if (n == 0) {
-                logMessage(LOG_PATH, "[OBST] Pipe chiusa da window, termino.");
+                logMessage(LOG_PATH, "[OBST] Pipe chiusa da blackboard, termino.");
                 break;
             }
 
@@ -130,7 +130,7 @@ int main(int argc, char *argv[]) {
                 write(fd_out, arr, sizeof(Point) * num_obst);
 
                 logMessage(LOG_PATH,
-                           "[OBST] Inviati %d ostacoli a window (width=%d height=%d)",
+                           "[OBST] Inviati %d ostacoli a blackboard (width=%d height=%d)",
                            num_obst, width, height);
 
                 free(arr);
