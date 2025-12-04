@@ -174,10 +174,10 @@ int main(int argc, char *argv[]) {
         // -------------------------------
         // TOTAL FORCE WITH MAX LIMIT
         // -------------------------------
+
         float totFx = drn.Fx + repFx + repWallFx;
         float totFy = drn.Fy + repFy + repWallFy;
 
-        // Clamp total force to MAX_FORCE
         float forceMag = sqrt(totFx*totFx + totFy*totFy);
         if (forceMag > MAX_FORCE) {
             totFx = totFx / forceMag * MAX_FORCE;
@@ -195,8 +195,8 @@ int main(int argc, char *argv[]) {
         drn.x = (DT*DT*totFx - drn.x_2 + (2 + K*DT)*drn.x_1) / (1 + K*DT);
         drn.y = (DT*DT*totFy - drn.y_2 + (2 + K*DT)*drn.y_1) / (1 + K*DT);
 
-        drn.Fx = totFx;
-        drn.Fy = totFy;
+        //drn.Fx = totFx;
+        //drn.Fy = totFy;
         
 
         // -------------------------------

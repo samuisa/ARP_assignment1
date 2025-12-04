@@ -1,58 +1,252 @@
-[2025-12-04 11:30:37] (PID 24780) [MAIN] PROGRAM STARTED
-[2025-12-04 11:30:37] (PID 24780) [MAIN] Main program running
-[2025-12-04 11:30:37] (PID 24783) [TARG] Avviato (fd_in=13, fd_out=16)
-[2025-12-04 11:30:37] (PID 24782) [OBST] Avviato (fd_in=9, fd_out=12)
-[2025-12-04 11:30:38] (PID 24818) [BB] main avviato
-[2025-12-04 11:30:38] (PID 24782) [OBST] Generati 24 ostacoli per grid 105x49
-[2025-12-04 11:30:38] (PID 24783) [TARG] Ricevute dimensioni finestra 105x49
-[2025-12-04 11:30:38] (PID 24782) [OBST] Inviati 24 ostacoli a blackboard (width=105 height=49)
-[2025-12-04 11:30:38] (PID 24785) [DRONE] Initial drone position: (x = 52.500000, y = 24.500000)
-[2025-12-04 11:30:38] (PID 24783) [TARG] Ricevuti 24 ostacoli
-[2025-12-04 11:30:38] (PID 24783) [TARG] Generati 5 target per grid 105x49
-[2025-12-04 11:30:38] (PID 24783) [TARG] Inviati 5 target a blackboard
-[2025-12-04 11:30:46] (PID 24785) [DRONE] Input not recognized
-[2025-12-04 11:30:46] (PID 24785) [DRONE] Input not recognized
-[2025-12-04 11:30:46] (PID 24785) [DRONE] Input not recognized
-[2025-12-04 11:30:46] (PID 24785) [DRONE] Input not recognized
-[2025-12-04 11:30:46] (PID 24785) [DRONE] Input not recognized
-[2025-12-04 11:30:46] (PID 24785) [DRONE] Input not recognized
-[2025-12-04 11:30:46] (PID 24785) [DRONE] Input not recognized
-[2025-12-04 11:30:46] (PID 24785) [DRONE] Input not recognized
-[2025-12-04 11:30:46] (PID 24785) [DRONE] Input not recognized
-[2025-12-04 11:30:46] (PID 24785) [DRONE] Input not recognized
-[2025-12-04 11:30:46] (PID 24785) [DRONE] Input not recognized
-[2025-12-04 11:30:46] (PID 24785) [DRONE] Input not recognized
-[2025-12-04 11:30:46] (PID 24785) [DRONE] Input not recognized
-[2025-12-04 11:30:46] (PID 24785) [DRONE] Input not recognized
-[2025-12-04 11:30:46] (PID 24785) [DRONE] Input not recognized
-[2025-12-04 11:30:46] (PID 24785) [DRONE] Input not recognized
-[2025-12-04 11:30:46] (PID 24785) [DRONE] Input not recognized
-[2025-12-04 11:30:46] (PID 24785) [DRONE] Input not recognized
-[2025-12-04 11:30:46] (PID 24785) [DRONE] Input not recognized
-[2025-12-04 11:30:46] (PID 24785) [DRONE] Input not recognized
-[2025-12-04 11:30:46] (PID 24785) [DRONE] Input not recognized
-[2025-12-04 11:30:46] (PID 24785) [DRONE] Input not recognized
-[2025-12-04 11:30:46] (PID 24785) [DRONE] Input not recognized
-[2025-12-04 11:30:46] (PID 24785) [DRONE] Input not recognized
-[2025-12-04 11:30:46] (PID 24785) [DRONE] Input not recognized
-[2025-12-04 11:30:46] (PID 24785) [DRONE] Input not recognized
-[2025-12-04 11:30:46] (PID 24785) [DRONE] Input not recognized
-[2025-12-04 11:30:46] (PID 24785) [DRONE] Input not recognized
-[2025-12-04 11:30:46] (PID 24785) [DRONE] Input not recognized
-[2025-12-04 11:30:47] (PID 24785) [DRONE] Input not recognized
-[2025-12-04 11:30:47] (PID 24785) [DRONE] Input not recognized
-[2025-12-04 11:30:47] (PID 24785) [DRONE] Input not recognized
-[2025-12-04 11:30:47] (PID 24785) [DRONE] Input not recognized
-[2025-12-04 11:30:47] (PID 24785) [DRONE] Input not recognized
-[2025-12-04 11:30:47] (PID 24785) [DRONE] Input not recognized
-[2025-12-04 11:30:47] (PID 24785) [DRONE] Input not recognized
-[2025-12-04 11:30:47] (PID 24785) [DRONE] Input not recognized
-[2025-12-04 11:30:47] (PID 24785) [DRONE] Input not recognized
-[2025-12-04 11:30:47] (PID 24785) [DRONE] Input not recognized
-[2025-12-04 11:30:50] (PID 24785) [DRONE] Input received, force updated, command: f, Fx = 1.000000, Fy = 0.000000
-[2025-12-04 11:31:17] (PID 24818) [BB] main terminato
-[2025-12-04 11:31:17] (PID 24782) [OBST] Pipe chiusa da blackboard, termino.
-[2025-12-04 11:31:17] (PID 24783) [TARG] Pipe chiusa da blackboard, termino.
-[2025-12-04 11:31:17] (PID 24782) [OBST] Terminato correttamente.
-[2025-12-04 11:31:17] (PID 24783) [TARG] Terminato correttamente.
-[2025-12-04 11:31:17] (PID 24780) [MAIN] PROGRAM EXIT
+[2025-12-04 14:43:35] (PID 30245) [MAIN] PROGRAM STARTED
+[2025-12-04 14:43:35] (PID 30245) [MAIN] Main program running
+[2025-12-04 14:43:35] (PID 30248) [TARG] Avviato (fd_in=13, fd_out=16)
+[2025-12-04 14:43:35] (PID 30247) [OBST] Avviato (fd_in=9, fd_out=12)
+[2025-12-04 14:43:36] (PID 30282) [BB] main avviato
+[2025-12-04 14:43:36] (PID 30248) [TARG] Ricevute dimensioni finestra 66x40
+[2025-12-04 14:43:36] (PID 30247) [OBST] Generati 12 ostacoli per grid 66x40
+[2025-12-04 14:43:36] (PID 30247) [OBST] Inviati 12 ostacoli a blackboard (width=66 height=40)
+[2025-12-04 14:43:36] (PID 30248) [TARG] Ricevuti 12 ostacoli
+[2025-12-04 14:43:36] (PID 30248) [TARG] Generati 2 target per grid 66x40
+[2025-12-04 14:43:36] (PID 30248) [TARG] Inviati 2 target a blackboard
+[2025-12-04 14:43:36] (PID 30250) [DRONE] Initial drone position: (x = 33.000000, y = 20.000000)
+[2025-12-04 14:43:39] (PID 30250) [DRONE] Input received, force updated, command: f, Fx = 1.000000, Fy = 0.000000
+[2025-12-04 14:43:40] (PID 30250) [DRONE] Input received, force updated, command: f, Fx = 2.000000, Fy = 0.000000
+[2025-12-04 14:43:40] (PID 30250) [DRONE] Input received, force updated, command: f, Fx = 3.000000, Fy = 0.000000
+[2025-12-04 14:43:40] (PID 30250) [DRONE] Input received, force updated, command: f, Fx = 4.000000, Fy = 0.000000
+[2025-12-04 14:43:40] (PID 30250) [DRONE] Input received, force updated, command: f, Fx = 5.000000, Fy = 0.000000
+[2025-12-04 14:43:40] (PID 30250) [DRONE] Input received, force updated, command: f, Fx = 6.000000, Fy = 0.000000
+[2025-12-04 14:43:40] (PID 30250) [DRONE] Input received, force updated, command: f, Fx = 7.000000, Fy = 0.000000
+[2025-12-04 14:43:40] (PID 30250) [DRONE] Input received, force updated, command: f, Fx = 8.000000, Fy = 0.000000
+[2025-12-04 14:43:40] (PID 30250) [DRONE] Input received, force updated, command: f, Fx = 9.000000, Fy = 0.000000
+[2025-12-04 14:43:40] (PID 30250) [DRONE] Input received, force updated, command: f, Fx = 10.000000, Fy = 0.000000
+[2025-12-04 14:43:40] (PID 30250) [DRONE] Input received, force updated, command: f, Fx = 11.000000, Fy = 0.000000
+[2025-12-04 14:43:40] (PID 30250) [DRONE] Input received, force updated, command: f, Fx = 12.000000, Fy = 0.000000
+[2025-12-04 14:43:40] (PID 30250) [DRONE] Input received, force updated, command: f, Fx = 13.000000, Fy = 0.000000
+[2025-12-04 14:43:40] (PID 30250) [DRONE] Input received, force updated, command: f, Fx = 14.000000, Fy = 0.000000
+[2025-12-04 14:43:40] (PID 30250) [DRONE] Input received, force updated, command: f, Fx = 15.000000, Fy = 0.000000
+[2025-12-04 14:43:40] (PID 30250) [DRONE] Input received, force updated, command: f, Fx = 16.000000, Fy = 0.000000
+[2025-12-04 14:43:40] (PID 30250) [DRONE] Input received, force updated, command: f, Fx = 17.000000, Fy = 0.000000
+[2025-12-04 14:43:40] (PID 30250) [DRONE] Input received, force updated, command: f, Fx = 18.000000, Fy = 0.000000
+[2025-12-04 14:43:40] (PID 30250) [DRONE] Input received, force updated, command: f, Fx = 19.000000, Fy = 0.000000
+[2025-12-04 14:43:46] (PID 30250) [DRONE] Input received, force updated, command: s, Fx = 18.000000, Fy = 0.000000
+[2025-12-04 14:43:46] (PID 30250) [DRONE] Input received, force updated, command: s, Fx = 17.000000, Fy = 0.000000
+[2025-12-04 14:43:46] (PID 30250) [DRONE] Input received, force updated, command: s, Fx = 16.000000, Fy = 0.000000
+[2025-12-04 14:43:47] (PID 30250) [DRONE] Input received, force updated, command: d, Fx = 8.000000, Fy = 0.000000
+[2025-12-04 14:43:47] (PID 30250) [DRONE] Input received, force updated, command: s, Fx = 7.000000, Fy = 0.000000
+[2025-12-04 14:43:47] (PID 30250) [DRONE] Input received, force updated, command: s, Fx = 6.000000, Fy = 0.000000
+[2025-12-04 14:43:48] (PID 30250) [DRONE] Input received, force updated, command: s, Fx = 5.000000, Fy = 0.000000
+[2025-12-04 14:43:48] (PID 30250) [DRONE] Input received, force updated, command: s, Fx = 4.000000, Fy = 0.000000
+[2025-12-04 14:43:48] (PID 30250) [DRONE] Input received, force updated, command: s, Fx = 3.000000, Fy = 0.000000
+[2025-12-04 14:43:48] (PID 30250) [DRONE] Input received, force updated, command: s, Fx = 2.000000, Fy = 0.000000
+[2025-12-04 14:43:48] (PID 30250) [DRONE] Input received, force updated, command: s, Fx = 1.000000, Fy = 0.000000
+[2025-12-04 14:43:49] (PID 30250) [DRONE] Input received, force updated, command: s, Fx = 0.000000, Fy = 0.000000
+[2025-12-04 14:43:49] (PID 30250) [DRONE] Input received, force updated, command: s, Fx = -1.000000, Fy = 0.000000
+[2025-12-04 14:43:49] (PID 30250) [DRONE] Input received, force updated, command: s, Fx = -2.000000, Fy = 0.000000
+[2025-12-04 14:43:49] (PID 30250) [DRONE] Input received, force updated, command: s, Fx = -3.000000, Fy = 0.000000
+[2025-12-04 14:43:49] (PID 30250) [DRONE] Input received, force updated, command: s, Fx = -4.000000, Fy = 0.000000
+[2025-12-04 14:43:56] (PID 30250) [DRONE] Input received, force updated, command: s, Fx = -5.000000, Fy = 0.000000
+[2025-12-04 14:43:57] (PID 30250) [DRONE] Input received, force updated, command: s, Fx = -6.000000, Fy = 0.000000
+[2025-12-04 14:43:57] (PID 30250) [DRONE] Input received, force updated, command: s, Fx = -7.000000, Fy = 0.000000
+[2025-12-04 14:43:57] (PID 30250) [DRONE] Input received, force updated, command: s, Fx = -8.000000, Fy = 0.000000
+[2025-12-04 14:43:57] (PID 30250) [DRONE] Input received, force updated, command: s, Fx = -9.000000, Fy = 0.000000
+[2025-12-04 14:43:57] (PID 30250) [DRONE] Input received, force updated, command: s, Fx = -10.000000, Fy = 0.000000
+[2025-12-04 14:43:57] (PID 30250) [DRONE] Input received, force updated, command: s, Fx = -11.000000, Fy = 0.000000
+[2025-12-04 14:43:57] (PID 30250) [DRONE] Input received, force updated, command: s, Fx = -12.000000, Fy = 0.000000
+[2025-12-04 14:43:57] (PID 30250) [DRONE] Input received, force updated, command: s, Fx = -13.000000, Fy = 0.000000
+[2025-12-04 14:43:57] (PID 30250) [DRONE] Input received, force updated, command: s, Fx = -14.000000, Fy = 0.000000
+[2025-12-04 14:43:57] (PID 30250) [DRONE] Input received, force updated, command: s, Fx = -15.000000, Fy = 0.000000
+[2025-12-04 14:43:57] (PID 30250) [DRONE] Input received, force updated, command: s, Fx = -16.000000, Fy = 0.000000
+[2025-12-04 14:43:57] (PID 30250) [DRONE] Input received, force updated, command: s, Fx = -17.000000, Fy = 0.000000
+[2025-12-04 14:43:57] (PID 30250) [DRONE] Input received, force updated, command: s, Fx = -18.000000, Fy = 0.000000
+[2025-12-04 14:43:57] (PID 30250) [DRONE] Input received, force updated, command: s, Fx = -19.000000, Fy = 0.000000
+[2025-12-04 14:43:57] (PID 30250) [DRONE] Input received, force updated, command: s, Fx = -20.000000, Fy = 0.000000
+[2025-12-04 14:43:57] (PID 30250) [DRONE] Input received, force updated, command: s, Fx = -21.000000, Fy = 0.000000
+[2025-12-04 14:43:57] (PID 30250) [DRONE] Input received, force updated, command: s, Fx = -22.000000, Fy = 0.000000
+[2025-12-04 14:43:57] (PID 30250) [DRONE] Input received, force updated, command: s, Fx = -23.000000, Fy = 0.000000
+[2025-12-04 14:43:57] (PID 30250) [DRONE] Input received, force updated, command: s, Fx = -24.000000, Fy = 0.000000
+[2025-12-04 14:43:57] (PID 30250) [DRONE] Input received, force updated, command: s, Fx = -25.000000, Fy = 0.000000
+[2025-12-04 14:43:57] (PID 30250) [DRONE] Input received, force updated, command: s, Fx = -26.000000, Fy = 0.000000
+[2025-12-04 14:43:57] (PID 30250) [DRONE] Input received, force updated, command: s, Fx = -27.000000, Fy = 0.000000
+[2025-12-04 14:43:57] (PID 30250) [DRONE] Input received, force updated, command: s, Fx = -28.000000, Fy = 0.000000
+[2025-12-04 14:43:57] (PID 30250) [DRONE] Input received, force updated, command: s, Fx = -29.000000, Fy = 0.000000
+[2025-12-04 14:43:57] (PID 30250) [DRONE] Input received, force updated, command: s, Fx = -30.000000, Fy = 0.000000
+[2025-12-04 14:43:57] (PID 30250) [DRONE] Input received, force updated, command: s, Fx = -31.000000, Fy = 0.000000
+[2025-12-04 14:43:58] (PID 30250) [DRONE] Input received, force updated, command: s, Fx = -32.000000, Fy = 0.000000
+[2025-12-04 14:44:06] (PID 30250) [DRONE] Input received, force updated, command: f, Fx = -31.000000, Fy = 0.000000
+[2025-12-04 14:44:07] (PID 30250) [DRONE] Input received, force updated, command: f, Fx = -30.000000, Fy = 0.000000
+[2025-12-04 14:44:07] (PID 30250) [DRONE] Input received, force updated, command: f, Fx = -29.000000, Fy = 0.000000
+[2025-12-04 14:44:08] (PID 30250) [DRONE] Input received, force updated, command: f, Fx = -28.000000, Fy = 0.000000
+[2025-12-04 14:44:08] (PID 30250) [DRONE] Input received, force updated, command: f, Fx = -27.000000, Fy = 0.000000
+[2025-12-04 14:44:08] (PID 30250) [DRONE] Input received, force updated, command: f, Fx = -26.000000, Fy = 0.000000
+[2025-12-04 14:44:09] (PID 30250) [DRONE] Input received, force updated, command: f, Fx = -25.000000, Fy = 0.000000
+[2025-12-04 14:44:09] (PID 30250) [DRONE] Input received, force updated, command: f, Fx = -24.000000, Fy = 0.000000
+[2025-12-04 14:44:09] (PID 30250) [DRONE] Input received, force updated, command: f, Fx = -23.000000, Fy = 0.000000
+[2025-12-04 14:44:09] (PID 30250) [DRONE] Input received, force updated, command: f, Fx = -22.000000, Fy = 0.000000
+[2025-12-04 14:44:10] (PID 30250) [DRONE] Input received, force updated, command: f, Fx = -21.000000, Fy = 0.000000
+[2025-12-04 14:44:10] (PID 30250) [DRONE] Input received, force updated, command: f, Fx = -20.000000, Fy = 0.000000
+[2025-12-04 14:44:10] (PID 30250) [DRONE] Input received, force updated, command: f, Fx = -19.000000, Fy = 0.000000
+[2025-12-04 14:44:10] (PID 30250) [DRONE] Input received, force updated, command: f, Fx = -18.000000, Fy = 0.000000
+[2025-12-04 14:44:10] (PID 30250) [DRONE] Input received, force updated, command: f, Fx = -17.000000, Fy = 0.000000
+[2025-12-04 14:44:10] (PID 30250) [DRONE] Input received, force updated, command: f, Fx = -16.000000, Fy = 0.000000
+[2025-12-04 14:44:11] (PID 30250) [DRONE] Input received, force updated, command: f, Fx = -15.000000, Fy = 0.000000
+[2025-12-04 14:44:11] (PID 30250) [DRONE] Input received, force updated, command: f, Fx = -14.000000, Fy = 0.000000
+[2025-12-04 14:44:11] (PID 30250) [DRONE] Input received, force updated, command: f, Fx = -13.000000, Fy = 0.000000
+[2025-12-04 14:44:11] (PID 30250) [DRONE] Input received, force updated, command: f, Fx = -12.000000, Fy = 0.000000
+[2025-12-04 14:44:12] (PID 30250) [DRONE] Input received, force updated, command: f, Fx = -11.000000, Fy = 0.000000
+[2025-12-04 14:44:12] (PID 30250) [DRONE] Input received, force updated, command: f, Fx = -10.000000, Fy = 0.000000
+[2025-12-04 14:44:12] (PID 30250) [DRONE] Input received, force updated, command: f, Fx = -9.000000, Fy = 0.000000
+[2025-12-04 14:44:12] (PID 30250) [DRONE] Input received, force updated, command: f, Fx = -8.000000, Fy = 0.000000
+[2025-12-04 14:44:12] (PID 30250) [DRONE] Input received, force updated, command: f, Fx = -7.000000, Fy = 0.000000
+[2025-12-04 14:44:13] (PID 30250) [DRONE] Input received, force updated, command: d, Fx = -3.500000, Fy = 0.000000
+[2025-12-04 14:44:13] (PID 30250) [DRONE] Input received, force updated, command: f, Fx = -2.500000, Fy = 0.000000
+[2025-12-04 14:44:13] (PID 30250) [DRONE] Input received, force updated, command: f, Fx = -1.500000, Fy = 0.000000
+[2025-12-04 14:44:13] (PID 30250) [DRONE] Input received, force updated, command: f, Fx = -0.500000, Fy = 0.000000
+[2025-12-04 14:44:13] (PID 30250) [DRONE] Input received, force updated, command: f, Fx = 0.500000, Fy = 0.000000
+[2025-12-04 14:44:14] (PID 30250) [DRONE] Input received, force updated, command: f, Fx = 1.500000, Fy = 0.000000
+[2025-12-04 14:44:14] (PID 30250) [DRONE] Input received, force updated, command: f, Fx = 2.500000, Fy = 0.000000
+[2025-12-04 14:44:14] (PID 30250) [DRONE] Input received, force updated, command: f, Fx = 3.500000, Fy = 0.000000
+[2025-12-04 14:44:14] (PID 30250) [DRONE] Input received, force updated, command: f, Fx = 4.500000, Fy = 0.000000
+[2025-12-04 14:44:14] (PID 30250) [DRONE] Input received, force updated, command: f, Fx = 5.500000, Fy = 0.000000
+[2025-12-04 14:44:15] (PID 30250) [DRONE] Input received, force updated, command: d, Fx = 2.750000, Fy = 0.000000
+[2025-12-04 14:44:15] (PID 30250) [DRONE] Input received, force updated, command: d, Fx = 1.375000, Fy = 0.000000
+[2025-12-04 14:44:15] (PID 30250) [DRONE] Input received, force updated, command: d, Fx = 0.687500, Fy = 0.000000
+[2025-12-04 14:44:16] (PID 30250) [DRONE] Input received, force updated, command: d, Fx = 0.000000, Fy = 0.000000
+[2025-12-04 14:44:16] (PID 30250) [DRONE] Input received, force updated, command: d, Fx = 0.000000, Fy = 0.000000
+[2025-12-04 14:44:16] (PID 30250) [DRONE] Input received, force updated, command: d, Fx = 0.000000, Fy = 0.000000
+[2025-12-04 14:54:48] (PID 30250) [DRONE] Input received, force updated, command: f, Fx = 1.000000, Fy = 0.000000
+[2025-12-04 14:54:49] (PID 30250) [DRONE] Input received, force updated, command: f, Fx = 2.000000, Fy = 0.000000
+[2025-12-04 14:54:49] (PID 30250) [DRONE] Input received, force updated, command: f, Fx = 3.000000, Fy = 0.000000
+[2025-12-04 14:54:49] (PID 30250) [DRONE] Input received, force updated, command: f, Fx = 4.000000, Fy = 0.000000
+[2025-12-04 14:54:49] (PID 30250) [DRONE] Input received, force updated, command: f, Fx = 5.000000, Fy = 0.000000
+[2025-12-04 14:54:49] (PID 30250) [DRONE] Input received, force updated, command: f, Fx = 6.000000, Fy = 0.000000
+[2025-12-04 14:54:50] (PID 30250) [DRONE] Input received, force updated, command: f, Fx = 7.000000, Fy = 0.000000
+[2025-12-04 14:54:50] (PID 30250) [DRONE] Input received, force updated, command: f, Fx = 8.000000, Fy = 0.000000
+[2025-12-04 14:54:50] (PID 30250) [DRONE] Input received, force updated, command: f, Fx = 9.000000, Fy = 0.000000
+[2025-12-04 14:54:50] (PID 30250) [DRONE] Input received, force updated, command: f, Fx = 10.000000, Fy = 0.000000
+[2025-12-04 14:54:50] (PID 30250) [DRONE] Input received, force updated, command: f, Fx = 11.000000, Fy = 0.000000
+[2025-12-04 14:54:50] (PID 30250) [DRONE] Input received, force updated, command: f, Fx = 12.000000, Fy = 0.000000
+[2025-12-04 14:54:50] (PID 30250) [DRONE] Input received, force updated, command: f, Fx = 13.000000, Fy = 0.000000
+[2025-12-04 14:54:50] (PID 30250) [DRONE] Input received, force updated, command: f, Fx = 14.000000, Fy = 0.000000
+[2025-12-04 14:54:50] (PID 30250) [DRONE] Input received, force updated, command: f, Fx = 15.000000, Fy = 0.000000
+[2025-12-04 14:54:50] (PID 30250) [DRONE] Input received, force updated, command: f, Fx = 16.000000, Fy = 0.000000
+[2025-12-04 14:54:50] (PID 30250) [DRONE] Input received, force updated, command: f, Fx = 17.000000, Fy = 0.000000
+[2025-12-04 14:54:50] (PID 30250) [DRONE] Input received, force updated, command: f, Fx = 18.000000, Fy = 0.000000
+[2025-12-04 14:54:50] (PID 30250) [DRONE] Input received, force updated, command: f, Fx = 19.000000, Fy = 0.000000
+[2025-12-04 14:54:50] (PID 30250) [DRONE] Input received, force updated, command: f, Fx = 20.000000, Fy = 0.000000
+[2025-12-04 14:54:50] (PID 30250) [DRONE] Input received, force updated, command: f, Fx = 21.000000, Fy = 0.000000
+[2025-12-04 14:54:50] (PID 30250) [DRONE] Input received, force updated, command: f, Fx = 22.000000, Fy = 0.000000
+[2025-12-04 14:54:50] (PID 30250) [DRONE] Input received, force updated, command: f, Fx = 23.000000, Fy = 0.000000
+[2025-12-04 14:54:50] (PID 30250) [DRONE] Input received, force updated, command: f, Fx = 24.000000, Fy = 0.000000
+[2025-12-04 14:54:50] (PID 30250) [DRONE] Input received, force updated, command: f, Fx = 25.000000, Fy = 0.000000
+[2025-12-04 14:54:50] (PID 30250) [DRONE] Input received, force updated, command: f, Fx = 26.000000, Fy = 0.000000
+[2025-12-04 14:54:50] (PID 30250) [DRONE] Input received, force updated, command: f, Fx = 27.000000, Fy = 0.000000
+[2025-12-04 14:54:50] (PID 30250) [DRONE] Input received, force updated, command: f, Fx = 28.000000, Fy = 0.000000
+[2025-12-04 14:54:50] (PID 30250) [DRONE] Input received, force updated, command: f, Fx = 29.000000, Fy = 0.000000
+[2025-12-04 14:54:50] (PID 30250) [DRONE] Input received, force updated, command: f, Fx = 30.000000, Fy = 0.000000
+[2025-12-04 14:54:50] (PID 30250) [DRONE] Input received, force updated, command: f, Fx = 31.000000, Fy = 0.000000
+[2025-12-04 14:54:50] (PID 30250) [DRONE] Input received, force updated, command: f, Fx = 32.000000, Fy = 0.000000
+[2025-12-04 14:54:51] (PID 30250) [DRONE] Input received, force updated, command: f, Fx = 33.000000, Fy = 0.000000
+[2025-12-04 14:54:51] (PID 30250) [DRONE] Input received, force updated, command: f, Fx = 34.000000, Fy = 0.000000
+[2025-12-04 14:54:51] (PID 30250) [DRONE] Input received, force updated, command: f, Fx = 35.000000, Fy = 0.000000
+[2025-12-04 14:54:51] (PID 30250) [DRONE] Input received, force updated, command: f, Fx = 36.000000, Fy = 0.000000
+[2025-12-04 14:54:51] (PID 30250) [DRONE] Input received, force updated, command: f, Fx = 37.000000, Fy = 0.000000
+[2025-12-04 14:54:51] (PID 30250) [DRONE] Input received, force updated, command: f, Fx = 38.000000, Fy = 0.000000
+[2025-12-04 14:54:51] (PID 30250) [DRONE] Input received, force updated, command: f, Fx = 39.000000, Fy = 0.000000
+[2025-12-04 14:54:51] (PID 30250) [DRONE] Input received, force updated, command: f, Fx = 40.000000, Fy = 0.000000
+[2025-12-04 14:54:51] (PID 30250) [DRONE] Input received, force updated, command: f, Fx = 41.000000, Fy = 0.000000
+[2025-12-04 14:54:51] (PID 30250) [DRONE] Input received, force updated, command: f, Fx = 42.000000, Fy = 0.000000
+[2025-12-04 14:54:51] (PID 30250) [DRONE] Input received, force updated, command: f, Fx = 43.000000, Fy = 0.000000
+[2025-12-04 14:54:51] (PID 30250) [DRONE] Input received, force updated, command: f, Fx = 44.000000, Fy = 0.000000
+[2025-12-04 14:54:51] (PID 30250) [DRONE] Input received, force updated, command: f, Fx = 45.000000, Fy = 0.000000
+[2025-12-04 14:54:51] (PID 30250) [DRONE] Input received, force updated, command: f, Fx = 46.000000, Fy = 0.000000
+[2025-12-04 14:54:51] (PID 30250) [DRONE] Input received, force updated, command: f, Fx = 47.000000, Fy = 0.000000
+[2025-12-04 14:54:57] (PID 30250) [DRONE] Input received, force updated, command: s, Fx = 46.000000, Fy = 0.000000
+[2025-12-04 14:54:58] (PID 30250) [DRONE] Input received, force updated, command: s, Fx = 45.000000, Fy = 0.000000
+[2025-12-04 14:54:58] (PID 30250) [DRONE] Input received, force updated, command: s, Fx = 44.000000, Fy = 0.000000
+[2025-12-04 14:54:58] (PID 30250) [DRONE] Input received, force updated, command: s, Fx = 43.000000, Fy = 0.000000
+[2025-12-04 14:54:58] (PID 30250) [DRONE] Input received, force updated, command: s, Fx = 42.000000, Fy = 0.000000
+[2025-12-04 14:54:58] (PID 30250) [DRONE] Input received, force updated, command: s, Fx = 41.000000, Fy = 0.000000
+[2025-12-04 14:54:58] (PID 30250) [DRONE] Input received, force updated, command: s, Fx = 40.000000, Fy = 0.000000
+[2025-12-04 14:54:58] (PID 30250) [DRONE] Input received, force updated, command: s, Fx = 39.000000, Fy = 0.000000
+[2025-12-04 14:54:58] (PID 30250) [DRONE] Input received, force updated, command: s, Fx = 38.000000, Fy = 0.000000
+[2025-12-04 14:54:58] (PID 30250) [DRONE] Input received, force updated, command: s, Fx = 37.000000, Fy = 0.000000
+[2025-12-04 14:54:58] (PID 30250) [DRONE] Input received, force updated, command: s, Fx = 36.000000, Fy = 0.000000
+[2025-12-04 14:54:58] (PID 30250) [DRONE] Input received, force updated, command: s, Fx = 35.000000, Fy = 0.000000
+[2025-12-04 14:54:58] (PID 30250) [DRONE] Input received, force updated, command: s, Fx = 34.000000, Fy = 0.000000
+[2025-12-04 14:54:58] (PID 30250) [DRONE] Input received, force updated, command: s, Fx = 33.000000, Fy = 0.000000
+[2025-12-04 14:54:58] (PID 30250) [DRONE] Input received, force updated, command: s, Fx = 32.000000, Fy = 0.000000
+[2025-12-04 14:54:58] (PID 30250) [DRONE] Input received, force updated, command: s, Fx = 31.000000, Fy = 0.000000
+[2025-12-04 14:54:58] (PID 30250) [DRONE] Input received, force updated, command: s, Fx = 30.000000, Fy = 0.000000
+[2025-12-04 14:54:58] (PID 30250) [DRONE] Input received, force updated, command: s, Fx = 29.000000, Fy = 0.000000
+[2025-12-04 14:54:58] (PID 30250) [DRONE] Input received, force updated, command: s, Fx = 28.000000, Fy = 0.000000
+[2025-12-04 14:54:58] (PID 30250) [DRONE] Input received, force updated, command: s, Fx = 27.000000, Fy = 0.000000
+[2025-12-04 14:54:58] (PID 30250) [DRONE] Input received, force updated, command: s, Fx = 26.000000, Fy = 0.000000
+[2025-12-04 14:54:58] (PID 30250) [DRONE] Input received, force updated, command: s, Fx = 25.000000, Fy = 0.000000
+[2025-12-04 14:54:58] (PID 30250) [DRONE] Input received, force updated, command: s, Fx = 24.000000, Fy = 0.000000
+[2025-12-04 14:54:58] (PID 30250) [DRONE] Input received, force updated, command: s, Fx = 23.000000, Fy = 0.000000
+[2025-12-04 14:54:58] (PID 30250) [DRONE] Input received, force updated, command: s, Fx = 22.000000, Fy = 0.000000
+[2025-12-04 14:54:58] (PID 30250) [DRONE] Input received, force updated, command: s, Fx = 21.000000, Fy = 0.000000
+[2025-12-04 14:54:58] (PID 30250) [DRONE] Input received, force updated, command: s, Fx = 20.000000, Fy = 0.000000
+[2025-12-04 14:54:58] (PID 30250) [DRONE] Input received, force updated, command: s, Fx = 19.000000, Fy = 0.000000
+[2025-12-04 14:54:58] (PID 30250) [DRONE] Input received, force updated, command: s, Fx = 18.000000, Fy = 0.000000
+[2025-12-04 14:54:58] (PID 30250) [DRONE] Input received, force updated, command: s, Fx = 17.000000, Fy = 0.000000
+[2025-12-04 14:54:58] (PID 30250) [DRONE] Input received, force updated, command: s, Fx = 16.000000, Fy = 0.000000
+[2025-12-04 14:54:58] (PID 30250) [DRONE] Input received, force updated, command: s, Fx = 15.000000, Fy = 0.000000
+[2025-12-04 14:54:58] (PID 30250) [DRONE] Input received, force updated, command: s, Fx = 14.000000, Fy = 0.000000
+[2025-12-04 14:54:59] (PID 30250) [DRONE] Input received, force updated, command: s, Fx = 13.000000, Fy = 0.000000
+[2025-12-04 14:54:59] (PID 30250) [DRONE] Input received, force updated, command: s, Fx = 12.000000, Fy = 0.000000
+[2025-12-04 14:54:59] (PID 30250) [DRONE] Input received, force updated, command: s, Fx = 11.000000, Fy = 0.000000
+[2025-12-04 14:54:59] (PID 30250) [DRONE] Input received, force updated, command: s, Fx = 10.000000, Fy = 0.000000
+[2025-12-04 14:54:59] (PID 30250) [DRONE] Input received, force updated, command: s, Fx = 9.000000, Fy = 0.000000
+[2025-12-04 14:54:59] (PID 30250) [DRONE] Input received, force updated, command: s, Fx = 8.000000, Fy = 0.000000
+[2025-12-04 14:54:59] (PID 30250) [DRONE] Input received, force updated, command: s, Fx = 7.000000, Fy = 0.000000
+[2025-12-04 14:54:59] (PID 30250) [DRONE] Input received, force updated, command: s, Fx = 6.000000, Fy = 0.000000
+[2025-12-04 14:54:59] (PID 30250) [DRONE] Input received, force updated, command: s, Fx = 5.000000, Fy = 0.000000
+[2025-12-04 14:54:59] (PID 30250) [DRONE] Input received, force updated, command: s, Fx = 4.000000, Fy = 0.000000
+[2025-12-04 14:54:59] (PID 30250) [DRONE] Input received, force updated, command: s, Fx = 3.000000, Fy = 0.000000
+[2025-12-04 14:54:59] (PID 30250) [DRONE] Input received, force updated, command: s, Fx = 2.000000, Fy = 0.000000
+[2025-12-04 14:54:59] (PID 30250) [DRONE] Input received, force updated, command: s, Fx = 1.000000, Fy = 0.000000
+[2025-12-04 14:54:59] (PID 30250) [DRONE] Input received, force updated, command: s, Fx = 0.000000, Fy = 0.000000
+[2025-12-04 14:54:59] (PID 30250) [DRONE] Input received, force updated, command: s, Fx = -1.000000, Fy = 0.000000
+[2025-12-04 14:54:59] (PID 30250) [DRONE] Input received, force updated, command: s, Fx = -2.000000, Fy = 0.000000
+[2025-12-04 14:54:59] (PID 30250) [DRONE] Input received, force updated, command: s, Fx = -3.000000, Fy = 0.000000
+[2025-12-04 14:54:59] (PID 30250) [DRONE] Input received, force updated, command: s, Fx = -4.000000, Fy = 0.000000
+[2025-12-04 14:54:59] (PID 30250) [DRONE] Input received, force updated, command: s, Fx = -5.000000, Fy = 0.000000
+[2025-12-04 14:54:59] (PID 30250) [DRONE] Input received, force updated, command: s, Fx = -6.000000, Fy = 0.000000
+[2025-12-04 14:54:59] (PID 30250) [DRONE] Input received, force updated, command: s, Fx = -7.000000, Fy = 0.000000
+[2025-12-04 14:54:59] (PID 30250) [DRONE] Input received, force updated, command: s, Fx = -8.000000, Fy = 0.000000
+[2025-12-04 14:54:59] (PID 30250) [DRONE] Input received, force updated, command: s, Fx = -9.000000, Fy = 0.000000
+[2025-12-04 14:54:59] (PID 30250) [DRONE] Input received, force updated, command: s, Fx = -10.000000, Fy = 0.000000
+[2025-12-04 14:54:59] (PID 30250) [DRONE] Input received, force updated, command: s, Fx = -11.000000, Fy = 0.000000
+[2025-12-04 14:54:59] (PID 30250) [DRONE] Input received, force updated, command: s, Fx = -12.000000, Fy = 0.000000
+[2025-12-04 14:54:59] (PID 30250) [DRONE] Input received, force updated, command: s, Fx = -13.000000, Fy = 0.000000
+[2025-12-04 14:54:59] (PID 30250) [DRONE] Input received, force updated, command: s, Fx = -14.000000, Fy = 0.000000
+[2025-12-04 14:55:00] (PID 30250) [DRONE] Input received, force updated, command: c, Fx = -14.000000, Fy = 1.000000
+[2025-12-04 14:55:00] (PID 30250) [DRONE] Input received, force updated, command: c, Fx = -14.000000, Fy = 2.000000
+[2025-12-04 14:55:01] (PID 30250) [DRONE] Input received, force updated, command: c, Fx = -14.000000, Fy = 3.000000
+[2025-12-04 14:55:01] (PID 30250) [DRONE] Input received, force updated, command: s, Fx = -15.000000, Fy = 3.000000
+[2025-12-04 14:55:02] (PID 30250) [DRONE] Input received, force updated, command: e, Fx = -15.000000, Fy = 2.000000
+[2025-12-04 14:55:02] (PID 30250) [DRONE] Input received, force updated, command: e, Fx = -15.000000, Fy = 1.000000
+[2025-12-04 14:55:02] (PID 30250) [DRONE] Input received, force updated, command: e, Fx = -15.000000, Fy = 0.000000
+[2025-12-04 14:55:03] (PID 30250) [DRONE] Input received, force updated, command: e, Fx = -15.000000, Fy = -1.000000
+[2025-12-04 14:55:03] (PID 30250) [DRONE] Input received, force updated, command: e, Fx = -15.000000, Fy = -2.000000
+[2025-12-04 14:55:04] (PID 30250) [DRONE] Input received, force updated, command: f, Fx = -14.000000, Fy = -2.000000
+[2025-12-04 14:55:04] (PID 30250) [DRONE] Input received, force updated, command: d, Fx = -7.000000, Fy = -1.000000
+[2025-12-04 14:55:04] (PID 30250) [DRONE] Input received, force updated, command: d, Fx = -3.500000, Fy = 0.000000
+[2025-12-04 14:55:05] (PID 30250) [DRONE] Input received, force updated, command: d, Fx = -1.750000, Fy = 0.000000
+[2025-12-04 14:55:05] (PID 30250) [DRONE] Input received, force updated, command: d, Fx = -0.875000, Fy = 0.000000
+[2025-12-04 14:55:05] (PID 30250) [DRONE] Input received, force updated, command: d, Fx = 0.000000, Fy = 0.000000
+[2025-12-04 14:55:05] (PID 30250) [DRONE] Input received, force updated, command: f, Fx = 1.000000, Fy = 0.000000
+[2025-12-04 14:55:06] (PID 30250) [DRONE] Input received, force updated, command: f, Fx = 2.000000, Fy = 0.000000
+[2025-12-04 14:55:06] (PID 30250) [DRONE] Input received, force updated, command: f, Fx = 3.000000, Fy = 0.000000
+[2025-12-04 14:55:06] (PID 30250) [DRONE] Input received, force updated, command: f, Fx = 4.000000, Fy = 0.000000
+[2025-12-04 14:55:06] (PID 30250) [DRONE] Input received, force updated, command: f, Fx = 5.000000, Fy = 0.000000
+[2025-12-04 14:55:06] (PID 30250) [DRONE] Input received, force updated, command: f, Fx = 6.000000, Fy = 0.000000
+[2025-12-04 14:55:09] (PID 30250) [DRONE] Input received, force updated, command: c, Fx = 6.000000, Fy = 1.000000
+[2025-12-04 14:55:13] (PID 30282) [BB] main terminato
+[2025-12-04 14:55:14] (PID 30247) [OBST] Pipe chiusa da blackboard, termino.
+[2025-12-04 14:55:14] (PID 30248) [TARG] Pipe chiusa da blackboard, termino.
+[2025-12-04 14:55:14] (PID 30247) [OBST] Terminato correttamente.
+[2025-12-04 14:55:14] (PID 30248) [TARG] Terminato correttamente.
+[2025-12-04 14:55:14] (PID 30245) [MAIN] PROGRAM EXIT

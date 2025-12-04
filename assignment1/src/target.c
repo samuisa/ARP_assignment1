@@ -17,6 +17,7 @@ static int num_obstacles = 0;
 /*--------------------------------------------------------------------
   Genera un numero di ostacoli proporzionale alla dimensione della grid
 ---------------------------------------------------------------------*/
+
 Point* generate_targets(int width, int height,
                         Point* obstacles, int num_obstacles,
                         int* num_out) {
@@ -40,7 +41,6 @@ Point* generate_targets(int width, int height,
             arr[i].x = rand() % (width - 2) + 1;
             arr[i].y = rand() % (height - 2) + 1;
 
-            // evita sovrapposizioni tra target
             for (int j = 0; j < i; j++) {
                 if (arr[i].x == arr[j].x && arr[i].y == arr[j].y) {
                     valid = 0;
@@ -48,7 +48,6 @@ Point* generate_targets(int width, int height,
                 }
             }
 
-            // evita sovrapposizioni con ostacoli
             for (int j = 0; j < num_obstacles && valid; j++) {
                 if (arr[i].x == obstacles[j].x &&
                     arr[i].y == obstacles[j].y) {
@@ -70,6 +69,7 @@ Point* generate_targets(int width, int height,
 /*--------------------------------------------------------------------
    PROCESSO PRINCIPALE TARGETS
 ---------------------------------------------------------------------*/
+
 int main(int argc, char *argv[]) {
 
     if (argc < 3) {
@@ -121,6 +121,7 @@ int main(int argc, char *argv[]) {
             /*----------------------------------------------------------------
                RICEVO LA DIMENSIONE DELLA FINESTRA
             ----------------------------------------------------------------*/
+            
             if (msg.type == MSG_TYPE_SIZE) {
 
                 if (sscanf(msg.data, "%d %d", &win_width, &win_height) != 2) {
@@ -136,7 +137,6 @@ int main(int argc, char *argv[]) {
                 int count = 0;
                 if (sscanf(msg.data, "%d", &count) == 1 && count > 0) {
 
-                    // libera eventuali ostacoli precedenti
                     if (obstacles != NULL) {
                         free(obstacles);
                         obstacles = NULL;
@@ -166,6 +166,7 @@ int main(int argc, char *argv[]) {
                     // -------------------------------------------------
                     // ORA che ho sia finestra che ostacoli → genero target
                     // -------------------------------------------------
+
                     if (win_width > 0 && win_height > 0) {
 
                         int num_targ = 0;

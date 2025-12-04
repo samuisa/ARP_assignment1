@@ -9,11 +9,9 @@
 #include "log.h"
 #include "app_common.h"
 
-// Crea la cartella logs se non esiste
 void ensureLogsDir() {
     struct stat st;
 
-    // Create logs directory if it doesn't exist
     if (stat("logs", &st) == -1) {
         if (mkdir("logs", 0700) == -1) {
             perror("mkdir logs");
@@ -21,13 +19,12 @@ void ensureLogsDir() {
         }
     }
 
-    // Clear the log file at startup
-    FILE *logf = fopen(LOG_PATH, "w");  // "w" truncates the file
+    FILE *logf = fopen(LOG_PATH, "w");
     if (!logf) {
         perror("fopen log file");
         exit(1);
     }
-    fclose(logf);  // Close immediately, we'll reopen later in main
+    fclose(logf);
 }
 
 int main() {
@@ -57,7 +54,6 @@ int main() {
     // -------- PROCESSO INPUT --------
     pid_t pid_input = fork();
     if (pid_input == 0) {
-        // chiudo pipe non usate
         close(pipe_input_blackboard[0]);
         close(pipe_blackboard_drone[0]); close(pipe_blackboard_drone[1]);
         close(pipe_drone_blackboard[0]); close(pipe_drone_blackboard[1]);
@@ -105,7 +101,6 @@ int main() {
 
     pid_t pid_target = fork();
     if(pid_target == 0){
-        // chiudo pipe non usate
         close(pipe_input_blackboard[0]); close(pipe_input_blackboard[0]);
         close(pipe_blackboard_drone[0]); close(pipe_blackboard_drone[1]);
         close(pipe_drone_blackboard[0]); close(pipe_drone_blackboard[1]);
@@ -164,7 +159,7 @@ int main() {
         close(pipe_blackboard_drone[1]);
         close(pipe_blackboard_obstacle[0]); close(pipe_blackboard_obstacle[1]);
         close(pipe_input_blackboard[0]); close(pipe_input_blackboard[1]);
-        close(pipe_drone_blackboard[0]);  // lo useremo per scrivere
+        close(pipe_drone_blackboard[0]);
         close(pipe_obstacle_blackboard[0]); close(pipe_obstacle_blackboard[1]);
         close(pipe_blackboard_target[0]); close(pipe_blackboard_target[1]);
         close(pipe_target_blackboard[0]); close(pipe_target_blackboard[1]);
@@ -196,7 +191,6 @@ int main() {
     printf("[MAIN] Main program running (Input, Drone, blackboard, Obstacle, Target started)\n");
     logMessage(LOG_PATH, "[MAIN] Main program running");
 
-    // Aspetta tutti i figli
     int status;
     pid_t wpid;
     while ((wpid = wait(&status)) > 0);

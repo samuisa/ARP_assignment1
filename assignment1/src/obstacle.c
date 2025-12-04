@@ -61,8 +61,8 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    int fd_in  = atoi(argv[1]);   // riceve MSG_TYPE_SIZE
-    int fd_out = atoi(argv[2]);   // invia MSG_TYPE_OBSTACLES + array
+    int fd_in  = atoi(argv[1]);
+    int fd_out = atoi(argv[2]);
 
     logMessage(LOG_PATH, "[OBST] Avviato (fd_in=%d, fd_out=%d)", fd_in, fd_out);
 

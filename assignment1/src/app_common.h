@@ -19,7 +19,7 @@
 // ----- DRONE DYNAMIC -----
 
 #define M 1
-#define K 1
+#define K 10
 #define DT 0.01
 #define MAX_FORCE 10
 #define EPSILON 1e-6
