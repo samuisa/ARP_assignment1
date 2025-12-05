@@ -49,11 +49,10 @@ The log files are useful for tracking the drone's behavior every time the user p
 - the new force that is applied to the drone.
 The parameter files store useful structs and system parameters necessary for the simulation processes.
 
-<br>**Project comppsition**
+<br>**Project structure**
 
 ```bash
 .
-├── compiler.sh
 ├── exec
 │   ├── blackboard
 │   ├── drone
@@ -77,51 +76,18 @@ The parameter files store useful structs and system parameters necessary for the
     ├── main.c
     ├── obstacle.c
     └── target.c
-```
 
-```bash
-.
-├── assignment1
-│   ├── exec
-│   │   ├── blackboard
-│   │   ├── drone
-│   │   ├── input
-│   │   ├── main
-│   │   ├── obstacle
-│   │   └── target
-│   ├── logs
-│   │   └── system.log
-│   ├── Makefile
-│   ├── obj
-│   │   └── log.o
-│   └── src
-│       ├── app_blackboard.h
-│       ├── app_common.h
-│       ├── blackboard.c
-│       ├── drone.c
-│       ├── input.c
-│       ├── log.c
-│       ├── log.h
-│       ├── main.c
-│       ├── obstacle.c
-│       └── target.c
-├── images
-│   ├── ARP_diagramma.png
-│   ├── SketchARP.png
-│   └── windows.png
-└── README.md
 ```
-
 
 **How to Run the simulation**
 
 To compile and launch the 2D Drone Simulation project, follow these steps in your terminal:
 ```bash
-- make
+ make
 ```
 <br>Once compiled, to execute the main program and open the separate ncurses windows (Input, Window/Blackboard):
 
 ```bash
-- make run
+ make run
 ```
 <br>The simulation should now be active, displaying the drone environment and the input legend.
