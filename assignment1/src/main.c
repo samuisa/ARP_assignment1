@@ -192,6 +192,22 @@ int main() {
         exit(1);
     }
 
+    // -------- PROCESSO WATCHDOG --------
+    pid_t pid_watchdog = fork();
+    if (pid_watchdog == 0) {
+        logMessage(LOG_PATH, "[MAIN] Watchdog process started (pid=%d)", getpid());
+
+        char p_input[16], p_drone[16], p_obstacle[16], p_target[16], p_blackboard[16];
+        snprintf(p_input, 16, "%d", pid_input);
+        snprintf(p_drone, 16, "%d", pid_drone);
+        snprintf(p_blackboard, 16, "%d", pid_blackboard);
+        snprintf(p_obstacle, 16, "%d", pid_obst);
+        snprintf(p_target, 16, "%d", pid_target);
+        
+        execlp("./exec/watchdog", "./exec/watchdog", p_input, p_drone, p_blackboard, p_obstacle, p_target, NULL);
+        exit(1);
+    }
+
     // -------- PARENT --------
     close(pipe_input_blackboard[0]); close(pipe_input_blackboard[1]);
     close(pipe_blackboard_drone[0]); close(pipe_blackboard_drone[1]);
