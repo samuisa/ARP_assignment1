@@ -3,6 +3,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
+#include <signal.h>
+#include <time.h>
 #include "app_common.h" // Assumiamo che questo file esista
 #include "log.h"        // Include per il logging
 
@@ -36,15 +38,21 @@ void draw_legend() {
     refresh();
 }
 
+volatile sig_atomic_t running = 1;
+
+void handle_sigterm(int sig) {
+    running = 0;
+}
+
 int main(int argc, char *argv[]) {
-    if (argc < 4) {
+    if (argc < 3) {
         fprintf(stderr, "Usage: %s <fd_out> <fd_watchdog_write> <fd_watchdog_read>\n", argv[0]);
         return 1;
     }
 
     int fd_out = atoi(argv[1]);
-    int fd_watch_write = atoi(argv[2]);
-    int fd_watch_read = atoi(argv[3]);
+    pid_t watchdog_pid = atoi(argv[2]);
+
     int ch;
     char msg[2];
 
@@ -56,9 +64,21 @@ int main(int argc, char *argv[]) {
 
     logMessage(LOG_PATH, "[CTRL] Main started, fd_out=%d", fd_out);
 
+    signal(SIGTERM, handle_sigterm);
+    signal(SIGINT,  handle_sigterm);
+
+    time_t last_heartbeat = 0;
+
     draw_legend();
 
-    while (1) {
+    while (running) {
+
+        time_t now = time(NULL);
+        if (now != last_heartbeat) {
+            kill(watchdog_pid, SIGUSR1);
+            last_heartbeat = now;
+        }
+
         ch = getch();
 
         if (ch == ERR) {

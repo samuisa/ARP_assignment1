@@ -6,7 +6,9 @@
 #include <errno.h>
 #include <time.h>
 #include <math.h>
+#include <signal.h>
 #include <sys/select.h>
+#include <time.h>
 
 #include "app_common.h"
 #include "log.h"
@@ -71,20 +73,25 @@ Point* generate_targets(int width, int height,
     return arr;
 }
 
+volatile sig_atomic_t running = 1;
+
+void handle_sigterm(int sig) {
+    running = 0;
+}
+
 /*====================================================================
   MAIN TARGET PROCESS
 ======================================================================*/
 int main(int argc, char *argv[]) {
 
-    if (argc < 5) {
+    if (argc < 3) {
         fprintf(stderr, "Usage: %s <pipe_read_fd> <pipe_write_fd> <pipe_watchdog_write_fd> <pipe_watchdog_read_fd>\n", argv[0]);
         return 1;
     }
 
     int fd_in  = atoi(argv[1]);
     int fd_out = atoi(argv[2]);
-    int fd_watch_write  = atoi(argv[3]);
-    int fd_watch_read = atoi(argv[4]);
+    pid_t watchdog_pid = atoi(argv[3]);
 
 
     logMessage(LOG_PATH, "[TARG] Started (fd_in=%d, fd_out=%d)", fd_in, fd_out);
@@ -92,8 +99,19 @@ int main(int argc, char *argv[]) {
     int win_width = 0;
     int win_height = 0;
 
+    signal(SIGTERM, handle_sigterm);
+    signal(SIGINT,  handle_sigterm);
+
+    time_t last_heartbeat = 0;
+
     /*================== MAIN LOOP ==================*/
-    while (1) {
+    while (running) {
+
+        time_t now = time(NULL);
+        if (now != last_heartbeat) {
+            kill(watchdog_pid, SIGUSR1);
+            last_heartbeat = now;
+        }
 
         /*--------------------------
           Setup select() to read pipe

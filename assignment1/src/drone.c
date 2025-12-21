@@ -5,6 +5,8 @@
 #include <fcntl.h>
 #include <errno.h>
 #include <stdbool.h>
+#include <signal.h>
+#include <time.h>
 
 #include "app_common.h"
 #include "log.h"
@@ -29,13 +31,18 @@ void send_forces(Message msg,  int fd_out, float drone_Fx, float drone_Fy, float
     write(fd_out, &msg, sizeof(msg));
 }
 
+volatile sig_atomic_t running = 1;
+
+void handle_sigterm(int sig) {
+    running = 0;
+}
+
 int main(int argc, char *argv[]) {
-    if (argc < 4) return 1;
+    if (argc < 3) return 1;
 
     int fd_in  = atoi(argv[1]);
     int fd_out = atoi(argv[2]);
-    int fd_watch_write  = atoi(argv[3]);
-    int fd_watch_read = atoi(argv[4]);
+    pid_t watchdog_pid = atoi(argv[3]);
 
     fcntl(fd_in, F_SETFL, O_NONBLOCK);
 
@@ -46,7 +53,20 @@ int main(int argc, char *argv[]) {
 
     logMessage(LOG_PATH, "[DRONE] Process started");
 
-    while (1) {
+    signal(SIGTERM, handle_sigterm);
+    signal(SIGINT,  handle_sigterm);
+
+    time_t last_heartbeat = 0;
+
+
+    while (running) {
+
+        time_t now = time(NULL);
+        if (now != last_heartbeat) {
+            kill(watchdog_pid, SIGUSR1);
+            last_heartbeat = now;
+        }
+
         ssize_t n = read(fd_in, &msg, sizeof(Message));
         if (n > 0) {
             logMessage(LOG_PATH, "[DRONE] Message received: type=%d, data='%s'", msg.type, msg.data);

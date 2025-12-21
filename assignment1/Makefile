@@ -17,7 +17,7 @@ LOGDIR  = logs
 OBJS_COMMON = $(OBJDIR)/log.o
 
 # Target principali
-TARGETS = main drone obstacle blackboard input target
+TARGETS = main drone obstacle blackboard input target watchdog
 
 # =========================================================
 # Regola principale
@@ -58,11 +58,17 @@ input: $(SRCDIR)/input.c $(OBJS_COMMON)
 	@mkdir -p $(BINDIR)
 	$(CC) $(CFLAGS) $^ -o $(BINDIR)/$@ -lncurses
 
+watchdog: $(SRCDIR)/watchdog.c $(OBJS_COMMON)
+	@mkdir -p $(BINDIR)
+	$(CC) $(CFLAGS) $^ -o $(BINDIR)/$@ -lncurses
+
 # =========================================================
 # Setup cartelle
 # =========================================================
 setup:
 	@mkdir -p $(OBJDIR) $(BINDIR) $(LOGDIR)
+	@touch $(LOGDIR)/system.log
+	@touch $(LOGDIR)/watchdog.log
 
 # =========================================================
 # Pulizia
@@ -75,7 +81,7 @@ cleanall: clean
 
 # =========================================================
 # Esecuzione del programma principale
-# =========================================================
+# =================w========================================
 run: all
 	./$(BINDIR)/main
 
