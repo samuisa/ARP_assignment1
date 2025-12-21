@@ -30,10 +30,12 @@ void send_forces(Message msg,  int fd_out, float drone_Fx, float drone_Fy, float
 }
 
 int main(int argc, char *argv[]) {
-    if (argc < 3) return 1;
+    if (argc < 4) return 1;
 
     int fd_in  = atoi(argv[1]);
     int fd_out = atoi(argv[2]);
+    int fd_watch_write  = atoi(argv[3]);
+    int fd_watch_read = atoi(argv[4]);
 
     fcntl(fd_in, F_SETFL, O_NONBLOCK);
 
@@ -260,10 +262,6 @@ int main(int argc, char *argv[]) {
                 break;
             }
         }
-
-        // Changed
-        drn.Fx = totFx;
-        drn.Fy = totFy;
 
         // -------------------------------
         // SEND UPDATED POSITION + FORCES

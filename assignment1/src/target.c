@@ -76,13 +76,16 @@ Point* generate_targets(int width, int height,
 ======================================================================*/
 int main(int argc, char *argv[]) {
 
-    if (argc < 3) {
-        fprintf(stderr, "Usage: %s <pipe_read_fd> <pipe_write_fd>\n", argv[0]);
+    if (argc < 5) {
+        fprintf(stderr, "Usage: %s <pipe_read_fd> <pipe_write_fd> <pipe_watchdog_write_fd> <pipe_watchdog_read_fd>\n", argv[0]);
         return 1;
     }
 
     int fd_in  = atoi(argv[1]);
     int fd_out = atoi(argv[2]);
+    int fd_watch_write  = atoi(argv[3]);
+    int fd_watch_read = atoi(argv[4]);
+
 
     logMessage(LOG_PATH, "[TARG] Started (fd_in=%d, fd_out=%d)", fd_in, fd_out);
 
