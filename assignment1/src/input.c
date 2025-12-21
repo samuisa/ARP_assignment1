@@ -6,16 +6,6 @@
 #include "app_common.h" // Assumiamo che questo file esista
 #include "log.h"        // Include per il logging
 
-// Definizione della struttura dei comandi per una migliore leggibilità
-#define KEY_UP_LEFT 'w'
-#define KEY_UP_CENTER 'e'
-#define KEY_UP_RIGHT 'r'
-#define KEY_MID_LEFT 's'
-#define KEY_MID_CENTER 'd'
-#define KEY_MID_RIGHT 'f'
-#define KEY_DOWN_LEFT 'x'
-#define KEY_DOWN_CENTER 'c'
-#define KEY_DOWN_RIGHT 'v'
 #define KEY_QUIT 'q'
 
 void draw_legend() {
@@ -47,12 +37,14 @@ void draw_legend() {
 }
 
 int main(int argc, char *argv[]) {
-    if (argc < 2) {
-        fprintf(stderr, "Usage: %s <fd_out>\n", argv[0]);
+    if (argc < 4) {
+        fprintf(stderr, "Usage: %s <fd_out> <fd_watchdog_write> <fd_watchdog_read>\n", argv[0]);
         return 1;
     }
 
     int fd_out = atoi(argv[1]);
+    int fd_watch_write = atoi(argv[2]);
+    int fd_watch_read = atoi(argv[3]);
     int ch;
     char msg[2];
 

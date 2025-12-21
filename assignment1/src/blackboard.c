@@ -197,8 +197,8 @@ void send_resize(WINDOW *win, int fd_drone){
 /* ======================= MAIN ======================= */
 
 int main(int argc, char *argv[]) {
-    if (argc < 8) {
-        fprintf(stderr, "Usage: %s <pipe_fd_input_read> <fd_drone_read> <fd_drone_write> <fd_obst_read> <fd_obst_write> <fd_targ_write> <fd_targ_read>\n", argv[0]);
+    if (argc < 10) {
+        fprintf(stderr, "Usage: %s <pipe_fd_input_read> <fd_drone_read> <fd_drone_write> <fd_obst_read> <fd_obst_write> <fd_targ_write> <fd_targ_read> <fd_watchdog_write> <fd_watchdog_read>\n", argv[0]);
         return 1;
     }
 
@@ -209,6 +209,8 @@ int main(int argc, char *argv[]) {
     int fd_obst_read   = atoi(argv[5]);
     int fd_targ_write  = atoi(argv[6]);
     int fd_targ_read   = atoi(argv[7]);
+    int fd_watch_write  = atoi(argv[8]);
+    int fd_watch_read   = atoi(argv[9]);
 
     float drn_Fx = 0.0f, drn_Fy = 0.0f;
     float obst_Fx = 0.0f, obst_Fy = 0.0f;
