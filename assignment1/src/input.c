@@ -38,20 +38,23 @@ void draw_legend() {
     refresh();
 }
 
-volatile sig_atomic_t running = 1;
+/*volatile sig_atomic_t running = 1;
 
 void handle_sigterm(int sig) {
-    running = 0;
-}
+    (void)sig;        // evita warning
+    running = 0;      // SOLO questo
+}*/
+
+
 
 int main(int argc, char *argv[]) {
-    if (argc < 3) {
+    if (argc < 1) {
         fprintf(stderr, "Usage: %s <fd_out> <fd_watchdog_write> <fd_watchdog_read>\n", argv[0]);
         return 1;
     }
 
     int fd_out = atoi(argv[1]);
-    pid_t watchdog_pid = atoi(argv[2]);
+    //pid_t watchdog_pid = atoi(argv[2]);
 
     int ch;
     char msg[2];
@@ -64,20 +67,20 @@ int main(int argc, char *argv[]) {
 
     logMessage(LOG_PATH, "[CTRL] Main started, fd_out=%d", fd_out);
 
-    signal(SIGTERM, handle_sigterm);
+    /*signal(SIGTERM, handle_sigterm);
     signal(SIGINT,  handle_sigterm);
 
-    time_t last_heartbeat = 0;
+    time_t last_heartbeat = 0;*/
 
     draw_legend();
 
-    while (running) {
+    while (1) {
 
-        time_t now = time(NULL);
+        /*time_t now = time(NULL);
         if (now != last_heartbeat) {
             kill(watchdog_pid, SIGUSR1);
             last_heartbeat = now;
-        }
+        }*/
 
         ch = getch();
 

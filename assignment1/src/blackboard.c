@@ -11,6 +11,9 @@
 #include "app_common.h"
 #include "log.h"
 
+static struct timespec last_obst_change = {0, 0};
+#define OBSTACLE_PERIOD_SEC 5
+
 static char last_status[256] = "";
 
 static float current_x = 1.0f;
@@ -47,10 +50,14 @@ void destroy_window(WINDOW *win)
 
 /* ======================= DRAWING ======================= */
 
-void draw_content(WINDOW *win)
+void draw_background(WINDOW *win)
 {
     werase(win);
     box(win, 0, 0);
+}
+
+void draw_obstacles(WINDOW *win)
+{
 
     int max_y, max_x;
     getmaxyx(win, max_y, max_x);
@@ -63,6 +70,13 @@ void draw_content(WINDOW *win)
             mvwprintw(win, oy, ox, "0");
         }
     }
+}
+
+void draw_targets(WINDOW *win)
+{
+
+    int max_y, max_x;
+    getmaxyx(win, max_y, max_x);
 
     for (int i = 0; i < num_targets; i++) {
         int tx = targets[i].x;
@@ -73,6 +87,7 @@ void draw_content(WINDOW *win)
         }
     }
 }
+
 
 void draw_drone(WINDOW *win, float x, float y)
 {
@@ -87,7 +102,6 @@ void draw_drone(WINDOW *win, float x, float y)
     if (ix < 1) ix = 1;
     if (iy < 1) iy = 1;
 
-    draw_content(win);
     mvwprintw(win, iy, ix, "+");
 
     wnoutrefresh(win);
@@ -96,6 +110,57 @@ void draw_drone(WINDOW *win, float x, float y)
 
     logMessage(LOG_PATH, "[BB] Drone drawn at position: (%f, %f)", x, y);
 }
+
+void redraw_scene(WINDOW *win)
+{
+    draw_background(win);
+    draw_obstacles(win);
+    draw_targets(win);
+    draw_drone(win, current_x, current_y);
+
+    wnoutrefresh(win);
+    wnoutrefresh(status_win);
+    doupdate();
+}
+
+int overlaps_target(int x, int y) {
+    for (int i = 0; i < num_targets; i++) {
+        if (targets[i].x == x && targets[i].y == y)
+            return 1;
+    }
+    return 0;
+}
+
+void generate_new_obstacle(int idx,
+                           int width, int height)
+{
+    int valid;
+
+    do {
+        valid = 1;
+
+        obstacles[idx].x = rand() % (width - 2) + 1;
+        obstacles[idx].y = rand() % (height - 2) + 1;
+
+        /* overlap con altri ostacoli */
+        for (int i = 0; i < num_obstacles; i++) {
+            if (i != idx &&
+                obstacles[idx].x == obstacles[i].x &&
+                obstacles[idx].y == obstacles[i].y) {
+                valid = 0;
+                break;
+            }
+        }
+
+        /* overlap con target */
+        if (valid && overlaps_target(obstacles[idx].x,
+                                     obstacles[idx].y)) {
+            valid = 0;
+        }
+
+    } while (!valid);
+}
+
 
 /* ======================= STATUS BAR ======================= */
 
@@ -159,7 +224,8 @@ void reposition_and_redraw(WINDOW **win_ptr)
     werase(status_win);
     box(*win_ptr, 0, 0);
 
-    draw_drone(*win_ptr, current_x, current_y);
+    redraw_scene(*win_ptr);
+
 
     logMessage(LOG_PATH, "[BB] Window resized/redrawn: width=%d height=%d", new_width, new_height);
 }
@@ -196,16 +262,10 @@ void send_resize(WINDOW *win, int fd_drone){
     logMessage(LOG_PATH, "[BB] Resize message sent: width=%d height=%d", max_x, max_y);
 }
 
-volatile sig_atomic_t running = 1;
-
-void handle_sigterm(int sig) {
-    running = 0;
-}
-
 /* ======================= MAIN ======================= */
 
 int main(int argc, char *argv[]) {
-    if (argc < 8) {
+    if (argc < 7) {
         fprintf(stderr, "Usage: %s <pipe_fd_input_read> <fd_drone_read> <fd_drone_write> <fd_obst_read> <fd_obst_write> <fd_targ_write> <fd_targ_read> <fd_watchdog_write> <fd_watchdog_read>\n", argv[0]);
         return 1;
     }
@@ -217,7 +277,7 @@ int main(int argc, char *argv[]) {
     int fd_obst_read   = atoi(argv[5]);
     int fd_targ_write  = atoi(argv[6]);
     int fd_targ_read   = atoi(argv[7]);
-    pid_t watchdog_pid = atoi(argv[8]);
+    //pid_t watchdog_pid = atoi(argv[8]);
 
     float drn_Fx = 0.0f, drn_Fy = 0.0f;
     float obst_Fx = 0.0f, obst_Fy = 0.0f;
@@ -241,18 +301,18 @@ int main(int argc, char *argv[]) {
     struct timeval tv;
     Message msg;
     
-    signal(SIGTERM, handle_sigterm);
+/*    signal(SIGTERM, handle_sigterm);
     signal(SIGINT,  handle_sigterm);
 
-    time_t last_heartbeat = 0;
+    time_t last_heartbeat = 0;*/
 
-    while (running) {
+    while (1) {
 
-        time_t now = time(NULL);
+        /*time_t now = time(NULL);
         if (now != last_heartbeat) {
             kill(watchdog_pid, SIGUSR1);
             last_heartbeat = now;
-        }
+        }*/
 
         int ch = getch();
         if (ch != ERR) {
@@ -284,6 +344,44 @@ int main(int argc, char *argv[]) {
             break;
         }
 
+
+         /* =====================================================
+       GESTIONE TEMPORALE OSTACOLI (OGNI 5 SECONDI)
+       ===================================================== */
+    struct timespec now;
+    clock_gettime(CLOCK_MONOTONIC, &now);
+
+    if (num_obstacles > 0 &&
+        now.tv_sec - last_obst_change.tv_sec >= OBSTACLE_PERIOD_SEC) {
+
+        last_obst_change = now;
+
+        int idx = rand() % num_obstacles;
+
+        int max_y, max_x;
+        getmaxyx(win, max_y, max_x);
+
+        generate_new_obstacle(idx, max_x, max_y);
+
+        logMessage(LOG_PATH,
+            "[BB] Obstacle %d regenerated at (%d,%d)",
+            idx, obstacles[idx].x, obstacles[idx].y);
+
+        //draw_drone(win, current_x, current_y);
+        redraw_scene(win);
+
+        Message m;
+        m.type = MSG_TYPE_OBSTACLES;
+        snprintf(m.data, sizeof(m.data), "%d", num_obstacles);
+
+        write(fd_drone_write, &m, sizeof(m));
+        write(fd_drone_write, obstacles, sizeof(Point) * num_obstacles);
+
+        //write(fd_targ_write, &m, sizeof(m));
+        //write(fd_targ_write, obstacles, sizeof(Point) * num_obstacles);
+    }
+    
+
         // ---- PIPE INPUT ----
         if (FD_ISSET(fd_input_read, &readfds)) {
             char buf[80];
@@ -309,7 +407,7 @@ int main(int argc, char *argv[]) {
                 switch (msg.type) {
                     case MSG_TYPE_POSITION: {
                         if (sscanf(msg.data, "%f %f", &current_x, &current_y) == 2) {
-                            draw_drone(win, current_x, current_y);
+                            redraw_scene(win);
                         }
                         break;
                     }
@@ -378,7 +476,7 @@ int main(int argc, char *argv[]) {
                     default:
                         break;
                 }
-                draw_drone(win, current_x, current_y);
+                redraw_scene(win);
             } else if (n < 0 && errno != EAGAIN && errno != EWOULDBLOCK) {
                 perror("read fd_obst_read");
                 break;
@@ -417,6 +515,8 @@ int main(int argc, char *argv[]) {
 
                                 write(fd_drone_write, &out_msg, sizeof(out_msg));
                                 write(fd_drone_write, targets, sizeof(Point) * num_targets);
+                                write(fd_obst_write, &out_msg, sizeof(out_msg));
+                                write(fd_obst_write, targets, sizeof(Point) * num_targets);
                             }
                         }
                         break;
@@ -424,7 +524,7 @@ int main(int argc, char *argv[]) {
                     default:
                         break;
                 }
-                draw_drone(win, current_x, current_y);
+                redraw_scene(win);
             } else if (n < 0 && errno != EAGAIN && errno != EWOULDBLOCK) {
                 perror("read fd_targ_read");
                 break;

@@ -31,18 +31,19 @@ void send_forces(Message msg,  int fd_out, float drone_Fx, float drone_Fy, float
     write(fd_out, &msg, sizeof(msg));
 }
 
-volatile sig_atomic_t running = 1;
+/*volatile sig_atomic_t running = 1;
 
 void handle_sigterm(int sig) {
-    running = 0;
-}
+    (void)sig;        // evita warning
+    running = 0;      // SOLO questo
+}*/
 
 int main(int argc, char *argv[]) {
-    if (argc < 3) return 1;
+    if (argc < 2) return 1;
 
     int fd_in  = atoi(argv[1]);
     int fd_out = atoi(argv[2]);
-    pid_t watchdog_pid = atoi(argv[3]);
+    //pid_t watchdog_pid = atoi(argv[3]);
 
     fcntl(fd_in, F_SETFL, O_NONBLOCK);
 
@@ -53,19 +54,19 @@ int main(int argc, char *argv[]) {
 
     logMessage(LOG_PATH, "[DRONE] Process started");
 
-    signal(SIGTERM, handle_sigterm);
+    /*signal(SIGTERM, handle_sigterm);
     signal(SIGINT,  handle_sigterm);
 
-    time_t last_heartbeat = 0;
+    time_t last_heartbeat = 0;*/
 
 
-    while (running) {
+    while (1) {
 
-        time_t now = time(NULL);
+        /*time_t now = time(NULL);
         if (now != last_heartbeat) {
             kill(watchdog_pid, SIGUSR1);
             last_heartbeat = now;
-        }
+        }*/
 
         ssize_t n = read(fd_in, &msg, sizeof(Message));
         if (n > 0) {
