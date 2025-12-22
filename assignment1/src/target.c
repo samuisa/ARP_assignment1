@@ -73,25 +73,26 @@ Point* generate_targets(int width, int height,
     return arr;
 }
 
-volatile sig_atomic_t running = 1;
+/*volatile sig_atomic_t running = 1;
 
 void handle_sigterm(int sig) {
-    running = 0;
-}
+    (void)sig;        // evita warning
+    running = 0;      // SOLO questo
+}*/
 
 /*====================================================================
   MAIN TARGET PROCESS
 ======================================================================*/
 int main(int argc, char *argv[]) {
 
-    if (argc < 3) {
+    if (argc < 2) {
         fprintf(stderr, "Usage: %s <pipe_read_fd> <pipe_write_fd> <pipe_watchdog_write_fd> <pipe_watchdog_read_fd>\n", argv[0]);
         return 1;
     }
 
     int fd_in  = atoi(argv[1]);
     int fd_out = atoi(argv[2]);
-    pid_t watchdog_pid = atoi(argv[3]);
+    //pid_t watchdog_pid = atoi(argv[3]);
 
 
     logMessage(LOG_PATH, "[TARG] Started (fd_in=%d, fd_out=%d)", fd_in, fd_out);
@@ -99,19 +100,19 @@ int main(int argc, char *argv[]) {
     int win_width = 0;
     int win_height = 0;
 
-    signal(SIGTERM, handle_sigterm);
+    /*signal(SIGTERM, handle_sigterm);
     signal(SIGINT,  handle_sigterm);
 
-    time_t last_heartbeat = 0;
+    time_t last_heartbeat = 0;*/
 
     /*================== MAIN LOOP ==================*/
-    while (running) {
+    while (1) {
 
-        time_t now = time(NULL);
+        /*time_t now = time(NULL);
         if (now != last_heartbeat) {
             kill(watchdog_pid, SIGUSR1);
             last_heartbeat = now;
-        }
+        }*/
 
         /*--------------------------
           Setup select() to read pipe

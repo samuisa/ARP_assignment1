@@ -1,90 +1,62 @@
-# =========================================================
-# Makefile per il progetto con moduli multipli (drone, blackboard, ecc.)
-# =========================================================
+CC = gcc
+CFLAGS = -Wall -Wextra -I$(SRCDIR)
+LDLIBS = -lm
 
-# Compilatore e flag
-CC      = gcc
-CFLAGS  = -Wall -Wextra
-LDFLAGS = -lm
+SRCDIR = src
+OBJDIR = obj
+BINDIR = exec
+LOGDIR = logs
 
-# Cartelle
-SRCDIR  = src
-OBJDIR  = obj
-BINDIR  = exec
-LOGDIR  = logs
+COMMON_OBJS = $(OBJDIR)/log.o
 
-# File oggetto comuni
-OBJS_COMMON = $(OBJDIR)/log.o
-
-# Target principali
 TARGETS = main drone obstacle blackboard input target watchdog
 
-# =========================================================
-# Regola principale
-# =========================================================
 all: setup $(TARGETS)
 
-# =========================================================
-# Compilazione automatica dei file oggetto
-# =========================================================
+# =================== OGGETTI ===================
 $(OBJDIR)/%.o: $(SRCDIR)/%.c
 	@mkdir -p $(OBJDIR)
 	$(CC) $(CFLAGS) -c $< -o $@
 
-# =========================================================
-# Regole per gli exec
-# =========================================================
-main: $(SRCDIR)/main.c $(OBJS_COMMON)
+# =================== LINK ===================
+main: $(OBJDIR)/main.o $(COMMON_OBJS)
 	@mkdir -p $(BINDIR)
-	$(CC) $(CFLAGS) $^ -o $(BINDIR)/$@ -lncurses
+	$(CC) $^ -o $(BINDIR)/$@ -lncurses
 
-drone: $(SRCDIR)/drone.c $(OBJS_COMMON)
+drone: $(OBJDIR)/drone.o $(COMMON_OBJS)
 	@mkdir -p $(BINDIR)
-	$(CC) $(CFLAGS) $^ -o $(BINDIR)/$@ $(LDFLAGS)
+	$(CC) $^ -o $(BINDIR)/$@ $(LDLIBS)
 
-obstacle: $(SRCDIR)/obstacle.c $(OBJS_COMMON)
+obstacle: $(OBJDIR)/obstacle.o $(COMMON_OBJS)
 	@mkdir -p $(BINDIR)
-	$(CC) $(CFLAGS) $^ -o $(BINDIR)/$@ $(LDFLAGS)
+	$(CC) $^ -o $(BINDIR)/$@ $(LDLIBS)
 
-blackboard: $(SRCDIR)/blackboard.c $(OBJS_COMMON)
+blackboard: $(OBJDIR)/blackboard.o $(COMMON_OBJS)
 	@mkdir -p $(BINDIR)
-	$(CC) $(CFLAGS) $^ -o $(BINDIR)/$@ -lncursesw
+	$(CC) $^ -o $(BINDIR)/$@ -lncursesw
 
-target: $(SRCDIR)/target.c $(OBJS_COMMON)
+target: $(OBJDIR)/target.o $(COMMON_OBJS)
 	@mkdir -p $(BINDIR)
-	$(CC) $(CFLAGS) $^ -o $(BINDIR)/$@ $(LDFLAGS)
+	$(CC) $^ -o $(BINDIR)/$@ $(LDLIBS)
 
-input: $(SRCDIR)/input.c $(OBJS_COMMON)
+input: $(OBJDIR)/input.o $(COMMON_OBJS)
 	@mkdir -p $(BINDIR)
-	$(CC) $(CFLAGS) $^ -o $(BINDIR)/$@ -lncurses
+	$(CC) $^ -o $(BINDIR)/$@ -lncurses
 
-watchdog: $(SRCDIR)/watchdog.c $(OBJS_COMMON)
+watchdog: $(OBJDIR)/watchdog.o $(COMMON_OBJS)
 	@mkdir -p $(BINDIR)
-	$(CC) $(CFLAGS) $^ -o $(BINDIR)/$@ -lncurses
+	$(CC) $^ -o $(BINDIR)/$@
 
-# =========================================================
-# Setup cartelle
-# =========================================================
+# =================== UTILS ===================
 setup:
 	@mkdir -p $(OBJDIR) $(BINDIR) $(LOGDIR)
-	@touch $(LOGDIR)/system.log
-	@touch $(LOGDIR)/watchdog.log
+	@touch $(LOGDIR)/system.log $(LOGDIR)/watchdog.log
 
-# =========================================================
-# Pulizia
-# =========================================================
 clean:
-	rm -rf $(OBJDIR)/*.o
+	rm -rf $(OBJDIR)
 
 cleanall: clean
-	rm -rf $(BINDIR)/* $(LOGDIR)/*.log
+	rm -rf $(BINDIR) $(LOGDIR)
 
-# =========================================================
-# Esecuzione del programma principale
-# =================w========================================
 run: all
 	./$(BINDIR)/main
-
-# =========================================================
-# Fine Makefile
-# =========================================================
