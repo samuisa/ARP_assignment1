@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <fcntl.h>
 #include <string.h>
+#include <signal.h>
 #include <errno.h>
 #include <signal.h>
 #include <math.h>
@@ -14,7 +15,6 @@
 
 static struct timespec last_obst_change = {0, 0};
 #define OBSTACLE_PERIOD_SEC 5
-#define EPS 0.001f
 
 static char last_status[256] = "";
 
@@ -69,7 +69,10 @@ void draw_obstacles(WINDOW *win)
         int oy = obstacles[i].y;
         if (ox > 0 && ox < max_x - 1 &&
             oy > 0 && oy < max_y - 1) {
+            wattron(win, COLOR_PAIR(2));
             mvwprintw(win, oy, ox, "0");
+            wattroff(win, COLOR_PAIR(2));
+
         }
     }
 }
@@ -85,7 +88,10 @@ void draw_targets(WINDOW *win)
         int ty = targets[i].y;
         if (tx > 0 && tx < max_x - 1 &&
             ty > 0 && ty < max_y - 1) {
+            wattron(win, COLOR_PAIR(3));
             mvwprintw(win, ty, tx, "T");
+            wattroff(win, COLOR_PAIR(3));
+
         }
     }
 }
@@ -104,7 +110,10 @@ void draw_drone(WINDOW *win, float x, float y)
     if (ix < 1) ix = 1;
     if (iy < 1) iy = 1;
 
+    wattron(win, COLOR_PAIR(1));
     mvwprintw(win, iy, ix, "+");
+    wattroff(win, COLOR_PAIR(1));
+
 
     wnoutrefresh(win);
     wnoutrefresh(status_win);
@@ -324,6 +333,16 @@ int main(int argc, char *argv[]) {
     float wall_Fx = 0.0f, wall_Fy = 0.0f;
 
     initscr();
+
+    if (has_colors()) {
+        start_color();
+        use_default_colors();
+
+        init_pair(1, COLOR_BLUE,  -1);  // DRONE
+        init_pair(2, COLOR_RED,   -1);  // OSTACOLI
+        init_pair(3, COLOR_GREEN, -1);  // TARGET
+    }
+
     cbreak();
     noecho();
     curs_set(0);
@@ -341,6 +360,8 @@ int main(int argc, char *argv[]) {
     struct timeval tv;
     Message msg;
 
+    static struct timespec last_wd_hb = {0, 0};
+
     while (1) {
 
         int ch = getch();
@@ -351,6 +372,20 @@ int main(int argc, char *argv[]) {
                 send_resize(win, fd_drone_write);
             }
         }
+
+        struct timespec now;
+        clock_gettime(CLOCK_MONOTONIC, &now);
+
+        /* ================= WATCHDOG HEARTBEAT ================= */
+        if (now.tv_sec - last_wd_hb.tv_sec >= 1) {
+            kill(pid_watchdog, SIGUSR1);
+
+            logMessage(LOG_PATH,
+                "[BB] WD heartbeat sent");
+
+            last_wd_hb = now;
+        }
+
 
         FD_ZERO(&readfds);
         FD_SET(fd_input_read, &readfds);
@@ -377,37 +412,35 @@ int main(int argc, char *argv[]) {
          /* =====================================================
        GESTIONE TEMPORALE OSTACOLI (OGNI 5 SECONDI)
        ===================================================== */
-    struct timespec now;
-    clock_gettime(CLOCK_MONOTONIC, &now);
 
-    if (num_obstacles > 0 &&
-        now.tv_sec - last_obst_change.tv_sec >= OBSTACLE_PERIOD_SEC) {
+        if (num_obstacles > 0 &&
+            now.tv_sec - last_obst_change.tv_sec >= OBSTACLE_PERIOD_SEC) {
 
-        last_obst_change = now;
+            last_obst_change = now;
 
-        int idx = rand() % num_obstacles;
+            int idx = rand() % num_obstacles;
 
-        int max_y, max_x;
-        getmaxyx(win, max_y, max_x);
+            int max_y, max_x;
+            getmaxyx(win, max_y, max_x);
 
-        generate_new_obstacle(idx, max_x, max_y);
+            generate_new_obstacle(idx, max_x, max_y);
 
-        logMessage(LOG_PATH,
-            "[BB] Obstacle %d regenerated at (%d,%d)",
-            idx, obstacles[idx].x, obstacles[idx].y);
+            logMessage(LOG_PATH,
+                "[BB] Obstacle %d regenerated at (%d,%d)",
+                idx, obstacles[idx].x, obstacles[idx].y);
 
-        redraw_scene(win);
+            redraw_scene(win);
 
-        Message m;
-        m.type = MSG_TYPE_OBSTACLES;
-        snprintf(m.data, sizeof(m.data), "%d", num_obstacles);
+            Message m;
+            m.type = MSG_TYPE_OBSTACLES;
+            snprintf(m.data, sizeof(m.data), "%d", num_obstacles);
 
-        write(fd_drone_write, &m, sizeof(m));
-        write(fd_drone_write, obstacles, sizeof(Point) * num_obstacles);
+            write(fd_drone_write, &m, sizeof(m));
+            write(fd_drone_write, obstacles, sizeof(Point) * num_obstacles);
 
-        //write(fd_targ_write, &m, sizeof(m));
-        //write(fd_targ_write, obstacles, sizeof(Point) * num_obstacles);
-    }
+            //write(fd_targ_write, &m, sizeof(m));
+            //write(fd_targ_write, obstacles, sizeof(Point) * num_obstacles);
+        }
 
         // ---- PIPE INPUT ----
         if (FD_ISSET(fd_input_read, &readfds)) {

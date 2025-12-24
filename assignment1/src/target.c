@@ -135,17 +135,30 @@ int main(int argc, char *argv[]) {
 
     pid_t pid_watchdog = receive_watchdog_pid(fd_wd_read);
 
+    static struct timespec last_wd_hb = {0, 0};
+
     /*================== MAIN LOOP ==================*/
     while (1) {
 
-        /*--------------------------
-          Setup select() to read pipe
-        ---------------------------*/
+        struct timespec now;
+        clock_gettime(CLOCK_MONOTONIC, &now);
+
+        /* HEARTBEAT */
+        if (now.tv_sec - last_wd_hb.tv_sec >= 1) {
+            kill(pid_watchdog, SIGUSR1);
+            last_wd_hb = now;
+            logMessage(LOG_PATH, "[TARG] WD heartbeat sent");
+        }
+
         fd_set set;
         FD_ZERO(&set);
         FD_SET(fd_in, &set);
 
-        int ret = select(fd_in + 1, &set, NULL, NULL, NULL);
+        struct timeval tv;
+        tv.tv_sec = 0;
+        tv.tv_usec = 200000;
+
+        int ret = select(fd_in + 1, &set, NULL, NULL, &tv);
         if (ret < 0) {
             logMessage(LOG_PATH, "[TARG] ERROR select(): %s", strerror(errno));
             continue;

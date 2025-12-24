@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <signal.h>
 #include <errno.h>
+#include <time.h>
 #include "app_common.h" // Definizione Message, MSG_TYPE_PID, ecc.
 #include "log.h"        // logMessage
 
@@ -99,7 +100,23 @@ int main(int argc, char *argv[]) {
 
     draw_legend();
 
+    static struct timespec last_wd_hb = {0, 0};
+
     while(1) {
+
+        struct timespec now;
+        clock_gettime(CLOCK_MONOTONIC, &now);
+
+        /* ================= WATCHDOG HEARTBEAT ================= */
+        if (now.tv_sec - last_wd_hb.tv_sec >= 1) {
+            kill(pid_watchdog, SIGUSR1);
+
+            logMessage(LOG_PATH,
+                "[INPUT] WD heartbeat sent");
+
+            last_wd_hb = now;
+        }
+
         ch = getch();
 
         if(ch == ERR) {
@@ -112,18 +129,18 @@ int main(int argc, char *argv[]) {
 
         // invia al fd_out
         if(write(fd_out, msg_buf, 2) < 0) {
-            perror("[CTRL] write to fd_out");
+            perror("[INPUT] write to fd_out");
             break;
         }
 
-        logMessage(LOG_PATH, "[CTRL] Input captured: '%c' (ASCII %d) sent to fd_out=%d",
+        logMessage(LOG_PATH, "[INPUT] Input captured: '%c' (ASCII %d) sent to fd_out=%d",
                    ch, ch, fd_out);
 
         mvprintw(14, 0, "Feedback: '%c'  ", ch);
         refresh();
 
         if(ch == KEY_QUIT) {
-            logMessage(LOG_PATH, "[CTRL] Quit command received");
+            logMessage(LOG_PATH, "[INPUT] Quit command received");
             break;
         }
     }
