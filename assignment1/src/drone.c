@@ -98,8 +98,24 @@ int main(int argc, char *argv[]){
 
     pid_t pid_watchdog = receive_watchdog_pid(fd_wd_read);
 
+    static struct timespec last_wd_hb = {0, 0};
+
     /* ================= LOOP PRINCIPALE ================= */
     while(1){
+
+        struct timespec now;
+        clock_gettime(CLOCK_MONOTONIC, &now);
+
+        /* ================= WATCHDOG HEARTBEAT ================= */
+        if (now.tv_sec - last_wd_hb.tv_sec >= 1) {
+            kill(pid_watchdog, SIGUSR1);
+
+            logMessage(LOG_PATH,
+                "[DRONE] WD heartbeat sent");
+
+            last_wd_hb = now;
+        }
+
         ssize_t n = read(fd_in, &msg, sizeof(Message));
         if(n > 0){
             logMessage(LOG_PATH, "[DRONE] Message received: type=%d, data='%s'", msg.type, msg.data);
