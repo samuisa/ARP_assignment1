@@ -10,23 +10,25 @@ Our main processes, which have to manage more than one message at a time, use a 
 </div>
 
 
-<br>**Architecture and Processes**
+<br>**ARCHITECTURE AND PROCESSES**
 
 <div align="center">
   <img src="/images/SketchARP.png" alt="Diagramma Architettura Drone" width="600"/>
 </div>
 
-**MAIN** $\rightarrow$ This process handles initialization, creation of the pipes and the child processes, and waits for the termination of all processes. It also initializes the shared PID file used for system monitoring.
+**main** $\rightarrow$ This process handles initialization, creation of the pipes and the child processes, and waits for the termination of all processes. It also initializes the shared PID file used for system monitoring.
 
-**BLACKBOARD** $\rightarrow$ This process acts as the system's server. It uses select() to simultaneously monitor the various pipes connected to the other processes. 
+**blackboard** $\rightarrow$ This process acts as the system's server. It uses select() to simultaneously monitor the various pipes connected to the other processes. 
 
 - Initialization: configures the ncurses environment and sends the window dimensions to the other processes (except to the input process).
 - Visualization Update: updates the display of the drone (blue +), obstacles (red O), and targets(green T) when it receives their positions from each process.  
 - When the input process sends the character from the user keyboard, Blackboard process forwards it to the drone process, which updates the drone force respecting the position of obstacles and edges.
 
-**INPUT** $\rightarrow$ This process displays a non-interactive ncurses legend detailing the keys the user can press. It captures the user's keystrokes and sends them to the blackboard process.
+The blackboard is also responsable of the dynamic environment where obstacles and targets evolve during the game. It makes disappear obstacles and targets (when the drone collapse with them) and it is responsable to send the new obstacle and target array to the drone process. 
 
-**DRONE** $\rightarrow$ The drone process calculates its new position, using the Euler's method, based on:
+**input** $\rightarrow$ This process displays a non-interactive ncurses legend detailing the keys the user can press. It captures the user's keystrokes and sends them to the blackboard process.
+
+**drone** $\rightarrow$ The drone process calculates its new position, using the Euler's method, based on:
 
 - Its internal dynamics.
 - Manual forces sent by the user input.
@@ -36,15 +38,15 @@ During execution, the process uses a select loop to react to multiple input sour
 
 Finally, it sends its updated position to the blackboard process.
 
-**OBSTACLES** $\rightarrow$ This process generates a matrix of fixed obstacles based on a percentage of the window dimensions and sends this matrix to the blackboard process.
+**obstacles** $\rightarrow$ This process generates a matrix of fixed obstacles based on a percentage of the window dimensions and sends this matrix to the blackboard process. Every 5 seconds, an existing obstacle is removed and a new one is spawned in a random position. The system ensures that new obstacles do not overlap with existing targets (this mechanism is guaranteed by the balckboard process). 
 
-**TARGETS** $\rightarrow$ This process generates the targets in the same manner as obstacles, ensuring they do not overlap with obstacles or borders, and sends them to the blackboar process.
+**target** $\rightarrow$ This process generates the targets in the same manner as obstacles, ensuring they do not overlap with obstacles or borders, and sends them to the blackboar process. When the drone's coordinates overlap with a target, this one disappears from the map. This work for each targets until all target are reached by the drone and a new array of targets are generated and appers on the map (this mechanism is guaranteed by the balckboard process). 
 
 <div align="center">
   <img src="/images/ARP_diagramma.png" alt="Diagramma Architettura Drone" width="600"/>
 </div>
 
-**WATCHDOG** $\rightarrow$ A safety process that monitors the "liveness" of the entire system. When each process have written its pid on the shared register file "pid_registry", the watchodg works as follow:
+**watchdog** $\rightarrow$ A safety process that monitors the "liveness" of the entire system. When each process have written its pid on the shared register file "pid_registry", the watchodg works as follow:
 - It reads the PIDs of all active processes.
 - Every 2 seconds, it sends a SIGUSR1 to all processes.
 - Each process have to respond sending a SIGUSR2 signal.
@@ -54,7 +56,7 @@ Finally, it sends its updated position to the blackboard process.
   <img src="/images/watchdog.png" alt="Funzionamento Watchdog" width="600"/>
 </div>
 
-<br>**Additioinal Features**
+<br>**ADDITIONAL FEATURES**
 <br>As additional details for this project, a **Log File**, **Process Registry** and **Parameter Files** have been implemented.
 <br>The log files are useful for tracking the general behavior of each processes in real-time. 
 The parameter files store useful structs and system parameters necessary for the simulation processes.
@@ -63,7 +65,7 @@ The parameter files store useful structs and system parameters necessary for the
 <br>Conversely, the **app_blackboard.h** file is accessible only from the Blackboard process and contains the dimensions of the main window, which are sent to all other processes through pipes. This is necessary because the obstacle and target processes compute the number of items they must generate as a percentage of **WIDTH * SIZE**, and the drone process needs these dimensions to check whether the drone collides with the walls.
 
 
-<br>**Project structure**
+<br>**PROJECT STRUCTURE**
 
 ```bash
 .
@@ -106,7 +108,7 @@ The parameter files store useful structs and system parameters necessary for the
 
 ```
 
-**How to Run the simulation**
+<br>**HOW TO RUN THE SIMULATION**
 
 To compile and launch the 2D Drone Simulation project, follow these steps in your terminal:
 ```bash
