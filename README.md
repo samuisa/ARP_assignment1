@@ -1,7 +1,8 @@
 # ARP_assignment1
 This project implements a simulation of a drone moving in a 2D environment.
 
-The architecture is composed of 5 separate processes that communicate using unnamed pipes. These processes manage the overall logic, user input, the drone itself, obstacles, and targets within the 2D environment. The communication is managed by the main process, which creates the pipes and the child processes.
+The architecture is composed of 6 separate processes. While the main application data flows through unnamed pipes, the system health is monitored by a dedicated Watchdog process using POSIX signals. 
+These processes manage the overall logic, user input, the drone itself, obstacles, and targets within the 2D environment. The communication is managed by the main process, which creates the pipes and the child processes.
 Our main processes, which have to manage more than one message at a time, use a select() call to efficiently monitor multiple file descriptors simultaneously. This allows each process to react only when new data becomes available on one of the pipes, avoiding unnecessary blocking enabling a responsive. Through this mechanism, the system can handle asynchronous interactions between components while maintaining low overhead and ensuring timely coordination among all processes.
 
 <div align="center">
@@ -15,12 +16,12 @@ Our main processes, which have to manage more than one message at a time, use a 
   <img src="/images/SketchARP.png" alt="Diagramma Architettura Drone" width="600"/>
 </div>
 
-**MAIN** $\rightarrow$ This process handles initialization, creation of the pipes and the child processes, and waits for the termination of all processes.
+**MAIN** $\rightarrow$ This process handles initialization, creation of the pipes and the child processes, and waits for the termination of all processes. It also initializes the shared PID file used for system monitoring.
 
 **BLACKBOARD** $\rightarrow$ This process acts as the system's server. It uses select() to simultaneously monitor the various pipes connected to the other processes. 
 
 - Initialization: configures the ncurses environment and sends the window dimensions to the other processes (except to the input process).
-- Visualization Update: updates the display of the drone (+), obstacles (O), and targets(T) when it receives their positions from each process.  
+- Visualization Update: updates the display of the drone (blue +), obstacles (red O), and targets(green T) when it receives their positions from each process.  
 - When the input process sends the character from the user keyboard, Blackboard process forwards it to the drone process, which updates the drone force respecting the position of obstacles and edges.
 
 **INPUT** $\rightarrow$ This process displays a non-interactive ncurses legend detailing the keys the user can press. It captures the user's keystrokes and sends them to the blackboard process.
@@ -39,16 +40,25 @@ Finally, it sends its updated position to the blackboard process.
 
 **TARGETS** $\rightarrow$ This process generates the targets in the same manner as obstacles, ensuring they do not overlap with obstacles or borders, and sends them to the blackboar process.
 
-**WATCHDOG** $\rightarrow$
-
 <div align="center">
   <img src="/images/ARP_diagramma.png" alt="Diagramma Architettura Drone" width="600"/>
 </div>
 
+**WATCHDOG** $\rightarrow$ A safety process that monitors the "liveness" of the entire system. When each process have written its pid on the shared register file "pid_registry", the watchodg works as follow:
+- It reads the PIDs of all active processes.
+- Every 2 seconds, it sends a SIGUSR1 to all processes.
+- Each process have to respond sending a SIGUSR2 signal.
+- If a process fails to respond with a SIGUSR2 within 200ms, the Watchdog assumes a crash and terminates the entire simulation using SIGKILL to ensure system safety.
+
+<div align="center">
+  <img src="/images/watchdog.png" alt="Funzionamento Watchdog" width="600"/>
+</div>
+
 <br>**Additioinal Features**
-<br>As additional details for this project, a **Log File** and **Parameter Files** have been implemented.
+<br>As additional details for this project, a **Log File**, **Process Registry** and **Parameter Files** have been implemented.
 <br>The log files are useful for tracking the general behavior of each processes in real-time. 
 The parameter files store useful structs and system parameters necessary for the simulation processes.
+<br>The **pid_registry.txt** is a shared file which stores the PIDs of all active components, allowing the Watchdog to track them without dedicated pipes.
 <br>The **app_common.h** file is accessible from all processes and contains global variables and data structures, such as messages, the drone, and obstacles/targets. 
 <br>Conversely, the **app_blackboard.h** file is accessible only from the Blackboard process and contains the dimensions of the main window, which are sent to all other processes through pipes. This is necessary because the obstacle and target processes compute the number of items they must generate as a percentage of **WIDTH * SIZE**, and the drone process needs these dimensions to check whether the drone collides with the walls.
 
@@ -58,28 +68,42 @@ The parameter files store useful structs and system parameters necessary for the
 ```bash
 .
 ├── exec
-│   ├── blackboard
-│   ├── drone
-│   ├── input
-│   ├── main
-│   ├── obstacle
-│   └── target
+│   ├── blackboard
+│   ├── drone
+│   ├── input
+│   ├── main
+│   ├── obstacle
+│   ├── target
+│   └── watchdog
 ├── logs
-│   └── system.log
+│   ├── system.log
+│   └── watchdog.log
 ├── Makefile
 ├── obj
-│   └── log.o
-└── src
-    ├── app_blackboard.h
-    ├── app_common.h
-    ├── blackboard.c
-    ├── drone.c
-    ├── input.c
-    ├── log.c
-    ├── log.h
-    ├── main.c
-    ├── obstacle.c
-    └── target.c
+│   ├── blackboard.o
+│   ├── drone.o
+│   ├── input.o
+│   ├── log.o
+│   ├── main.o
+│   ├── obstacle.o
+│   ├── target.o
+│   └── watchdog.o
+├── pid_registry.txt
+├── src
+│   ├── app_blackboard.h
+│   ├── app_common.h
+│   ├── blackboard.c
+│   ├── drone.c
+│   ├── input.c
+│   ├── log.c
+│   ├── log.h
+│   ├── main.c
+│   ├── obstacle.c
+│   ├── process_pid.h
+│   ├── sium.c
+│   ├── target.c
+│   └── watchdog.c
+└── WatchDog_Proc.cpp
 
 ```
 
