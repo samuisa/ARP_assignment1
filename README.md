@@ -89,21 +89,20 @@ The parameter files store useful structs and system parameters necessary for the
 │   ├── target.o
 │   └── watchdog.o
 ├── pid_registry.txt
-├── src
-│   ├── app_blackboard.h
-│   ├── app_common.h
-│   ├── blackboard.c
-│   ├── drone.c
-│   ├── input.c
-│   ├── log.c
-│   ├── log.h
-│   ├── main.c
-│   ├── obstacle.c
-│   ├── process_pid.h
-│   ├── sium.c
-│   ├── target.c
-│   └── watchdog.c
-└── WatchDog_Proc.cpp
+└── src
+    ├── app_blackboard.h
+    ├── app_common.h
+    ├── blackboard.c
+    ├── drone.c
+    ├── input.c
+    ├── log.c
+    ├── log.h
+    ├── main.c
+    ├── obstacle.c
+    ├── process_pid.h
+    ├── sium.c
+    ├── target.c
+    └── watchdog.c
 
 ```
 
