@@ -1,3 +1,6 @@
+/* ======================================================================================
+ * SECTION 1: INCLUDES AND GLOBALS
+ * ====================================================================================== */
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -17,8 +20,11 @@
 
 typedef enum { STATE_INIT, STATE_WAITING, STATE_GENERATING } ProcessState;
 static volatile sig_atomic_t current_state = STATE_INIT;
-static volatile pid_t watchdog_pid = -1; // Volatile per i segnali
+static volatile pid_t watchdog_pid = -1;
 
+/* ======================================================================================
+ * SECTION 2: WATCHDOG & HELPERS
+ * ====================================================================================== */
 void publish_my_pid(FILE *fp) {
     fprintf(fp, "%s %d\n", OBSTACLE_PID_TAG, getpid());
     logMessage(LOG_PATH, "[OBST] PID published securely");
@@ -56,6 +62,10 @@ void watchdog_ping_handler(int sig) {
     if (watchdog_pid > 0) kill(watchdog_pid, SIGUSR2);
 }
 
+/* ======================================================================================
+ * SECTION 3: GENERATION LOGIC
+ * Creates random obstacles avoiding overlap.
+ * ====================================================================================== */
 Point* generate_obstacles(int width, int height, int* num_out) {
     int total_cells = (width - 2) * (height - 2);
     int count = (int) round(PERC_OBST * total_cells);
@@ -67,13 +77,14 @@ Point* generate_obstacles(int width, int height, int* num_out) {
         exit(1);
     }
 
-    srand(time(NULL)); // Spostare srand nel main sarebbe meglio, ma ok qui per ora
+    srand(time(NULL)); 
     for (int i = 0; i < count; i++) {
         int valid;
         do {
             valid = 1;
             arr[i].x = rand() % (width - 2) + 1;
             arr[i].y = rand() % (height - 2) + 1;
+            // Check self-overlap
             for (int j = 0; j < i; j++) {
                 if (arr[i].x == arr[j].x && arr[i].y == arr[j].y) {
                     valid = 0;
@@ -83,13 +94,13 @@ Point* generate_obstacles(int width, int height, int* num_out) {
         } while (!valid);
     }
     logMessage(LOG_PATH, "[OBST] Generated %d obstacles", count);
-    for(int i=0; i<count; i++){
-        logMessage(LOG_PATH, "[OBST] obstacles %d position: %d %d", i, arr[i].x, arr[i].y);
-    }
     *num_out = count;
     return arr;
 }
 
+/* ======================================================================================
+ * SECTION 4: MAIN EXECUTION
+ * ====================================================================================== */
 int main(int argc, char *argv[]) {
     if (argc < 3) return 1;
 
@@ -98,39 +109,27 @@ int main(int argc, char *argv[]) {
 
     logMessage(LOG_PATH, "[OBST] Started");
 
-    // 1. Installa Gestore
     struct sigaction sa;
     sa.sa_handler = watchdog_ping_handler;
     sigemptyset(&sa.sa_mask);
     sa.sa_flags = SA_RESTART;
     sigaction(SIGUSR1, &sa, NULL);
 
-    // PASSO A: Aspetta il watchdog (SENZA LOCK per evitare deadlock)
     wait_for_watchdog_pid();
 
-    // PASSO B: Scrivi il proprio PID (CON LOCK come richiesto)
     FILE *fp_pid = fopen(PID_FILE_PATH, "a");
     if (!fp_pid) {
         logMessage(LOG_PATH, "[OBST] Error opening PID file!");
         exit(1);
     }
-
-    // 1. ACQUISISCI LOCK
     int fd_pid = fileno(fp_pid);
     flock(fd_pid, LOCK_EX); 
-
-    // 2. CHIAMA FUNZIONE DI SCRITTURA
     publish_my_pid(fp_pid);
-
-    // 3. FLUSH PER FORZARE SCRITTURA SU DISCO
     fflush(fp_pid);
-
-    // 4. RILASCIA LOCK
     flock(fd_pid, LOCK_UN);
-
-    // 5. CHIUDI
     fclose(fp_pid);
 
+    // --- MAIN LOOP ---
     while (1) {
         current_state = STATE_WAITING;
         fd_set set;
@@ -157,15 +156,18 @@ int main(int argc, char *argv[]) {
                 break;
             }
 
+            // On MSG_TYPE_SIZE, generate obstacles
             if (msg.type == MSG_TYPE_SIZE) {
                 current_state = STATE_GENERATING;
                 int width, height;
                 if (sscanf(msg.data, "%d %d", &width, &height) == 2) {
                     int num_obst = 0;
                     Point* arr = generate_obstacles(width, height, &num_obst);
+                    
                     Message out_msg;
                     out_msg.type = MSG_TYPE_OBSTACLES;
                     snprintf(out_msg.data, sizeof(out_msg.data), "%d", num_obst);
+                    
                     write(fd_out, &out_msg, sizeof(out_msg));
                     write(fd_out, arr, sizeof(Point) * num_obst);
                     free(arr);

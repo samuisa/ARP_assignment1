@@ -1,3 +1,6 @@
+/* ======================================================================================
+ * SECTION 1: INCLUDES AND GLOBALS
+ * ====================================================================================== */
 #include <ncurses.h>
 #include <unistd.h>
 #include <stdlib.h>
@@ -10,13 +13,17 @@
 #include <sys/file.h>
 
 #include "process_pid.h"
-#include "app_common.h" // Definizione Message, MSG_TYPE_PID, ecc.
-#include "log.h"        // logMessage
+#include "app_common.h"
+#include "log.h"       
 
 #define KEY_QUIT 'q'
 
 static volatile pid_t watchdog_pid = -1;
 
+/* ======================================================================================
+ * SECTION 2: UI HELPER
+ * Draws the control legend on the screen.
+ * ====================================================================================== */
 void draw_legend() {
     int start_y = 6;
     int col_1 = 15, col_2 = 22, col_3 = 29;
@@ -43,6 +50,9 @@ void draw_legend() {
     refresh();
 }
 
+/* ======================================================================================
+ * SECTION 3: WATCHDOG UTILITIES
+ * ====================================================================================== */
 void publish_my_pid(FILE *fp) {
     fprintf(fp, "%s %d\n", INPUT_PID_TAG, getpid());
     logMessage(LOG_PATH, "[INPUT] PID published securely");
@@ -76,15 +86,15 @@ void wait_for_watchdog_pid() {
 }
 
 void watchdog_ping_handler(int signo) {
-    (void)signo; // Zittisce il warning del compilatore
+    (void)signo; 
     if(watchdog_pid > 0) kill(watchdog_pid, SIGUSR2);
 }
 
+/* ======================================================================================
+ * SECTION 4: MAIN EXECUTION (INPUT CAPTURE)
+ * ====================================================================================== */
 int main(int argc, char *argv[]) {
-    if(argc < 2) {
-        fprintf(stderr, "Usage: %s <fd_out> <fd_watchdog_read> <fd_watchdog_write>\n", argv[0]);
-        return 1;
-    }
+    if(argc < 2) return 1;
 
     int fd_out = atoi(argv[1]);
 
@@ -104,13 +114,9 @@ int main(int argc, char *argv[]) {
 
     int fd_pid = fileno(fp_pid);
     flock(fd_pid, LOCK_EX); 
-
     publish_my_pid(fp_pid);
-
     fflush(fp_pid);
-
     flock(fd_pid, LOCK_UN);
-
     fclose(fp_pid);
     
     int ch;
@@ -126,6 +132,7 @@ int main(int argc, char *argv[]) {
 
     draw_legend();
 
+    // --- MAIN LOOP ---
     while(1) {
 
         ch = getch();
@@ -138,7 +145,7 @@ int main(int argc, char *argv[]) {
         msg_buf[0] = (char)ch;
         msg_buf[1] = '\0';
 
-        // invia al fd_out
+        // Send character to Blackboard (fd_out)
         if(write(fd_out, msg_buf, 2) < 0) {
             perror("[INPUT] write to fd_out");
             break;

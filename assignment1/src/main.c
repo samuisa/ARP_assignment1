@@ -1,3 +1,7 @@
+/* ======================================================================================
+ * SECTION 1: INCLUDES AND UTILITIES
+ * Standard headers and helper functions for directory management.
+ * ====================================================================================== */
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -9,8 +13,6 @@
 #include "log.h"
 #include "app_common.h"
 #include "process_pid.h"
-
-/* ========================================================= */
 
 void ensureLogsDir(void) {
     struct stat st;
@@ -28,14 +30,17 @@ void ensureLogsDir(void) {
     fclose(logf);
 }
 
-/* ========================================================= */
-
+/* ======================================================================================
+ * SECTION 2: MAIN PROCESS ORCHESTRATION
+ * Creates pipes and forks all child processes (Input, Obstacle, Target, BB, Drone, Watchdog).
+ * ====================================================================================== */
 int main(void) {
 
     ensureLogsDir();
     logMessage(LOG_PATH, "[MAIN] PROGRAM STARTED");
 
-    /* ================= PIPE APPLICATIVE ================= */
+    /* --- SUB-SECTION: PIPE CREATION --- */
+    /* Establishing communication channels between processes */
 
     int pipe_input_blackboard[2];
     int pipe_blackboard_drone[2];
@@ -46,9 +51,7 @@ int main(void) {
     int pipe_target_blackboard[2];
     int pipe_blackboard_watchdog[2];
 
-    /* NOTA: Le pipe del Watchdog sono state rimosse.
-       La comunicazione avverrà tramite segnali e file PID.
-    */
+    /* Note: Watchdog uses signals/PID files, not application pipes (except for BB trigger if needed) */
 
     if (pipe(pipe_input_blackboard) == -1 ||
         pipe(pipe_blackboard_drone) == -1 ||
@@ -66,18 +69,19 @@ int main(void) {
 
     logMessage(LOG_PATH, "[MAIN] Application pipes created successfully");
 
+    // Reset PID file
     FILE *fp = fopen(PID_FILE_PATH, "w");
     if (fp) {
         fclose(fp);
     }
 
-    /* ================= PROCESSO INPUT ================= */
+    /* --- SUB-SECTION: FORKING PROCESSES --- */
 
+    /* 1. INPUT PROCESS (Runs in Konsole) */
     pid_t pid_input = fork();
     if (pid_input == 0) {
-        // Chiudo lati inutilizzati delle pipe applicative
-        close(pipe_input_blackboard[0]); // Input scrive solo qui
-        
+        // Close unused pipe ends
+        close(pipe_input_blackboard[0]); 
         close(pipe_blackboard_drone[0]); close(pipe_blackboard_drone[1]);
         close(pipe_drone_blackboard[0]); close(pipe_drone_blackboard[1]);
         close(pipe_blackboard_obstacle[0]); close(pipe_blackboard_obstacle[1]);
@@ -89,23 +93,17 @@ int main(void) {
         char fd_out[16];
         snprintf(fd_out, sizeof(fd_out), "%d", pipe_input_blackboard[1]);
 
-        // Lancio input senza pipe watchdog
-        execlp("konsole", "konsole", "-e",
-               "./exec/input", fd_out, NULL);
-
+        execlp("konsole", "konsole", "-e", "./exec/input", fd_out, NULL);
         perror("exec input");
         exit(1);
     }
 
-    /* ================= PROCESSO OBSTACLE ================= */
-
+    /* 2. OBSTACLE PROCESS */
     pid_t pid_obst = fork();
     if (pid_obst == 0) {
-        // Setup pipe applicative
-        close(pipe_blackboard_obstacle[1]); // Legge da BB
-        close(pipe_obstacle_blackboard[0]); // Scrive a BB
+        close(pipe_blackboard_obstacle[1]); 
+        close(pipe_obstacle_blackboard[0]); 
 
-        // Chiudo altre pipe
         close(pipe_input_blackboard[0]); close(pipe_input_blackboard[1]);
         close(pipe_blackboard_drone[0]); close(pipe_blackboard_drone[1]);
         close(pipe_drone_blackboard[0]); close(pipe_drone_blackboard[1]);
@@ -117,23 +115,17 @@ int main(void) {
         snprintf(fd_in,  sizeof(fd_in),  "%d", pipe_blackboard_obstacle[0]);
         snprintf(fd_out, sizeof(fd_out), "%d", pipe_obstacle_blackboard[1]);
 
-        // Lancio obstacle senza pipe watchdog
-        execlp("./exec/obstacle", "./exec/obstacle",
-               fd_in, fd_out, NULL);
-
+        execlp("./exec/obstacle", "./exec/obstacle", fd_in, fd_out, NULL);
         perror("exec obstacle");
         exit(1);
     }
 
-    /* ================= PROCESSO TARGET ================= */
-
+    /* 3. TARGET PROCESS */
     pid_t pid_target = fork();
     if (pid_target == 0) {
-        // Setup pipe applicative
-        close(pipe_blackboard_target[1]); // Legge da BB
-        close(pipe_target_blackboard[0]); // Scrive a BB
+        close(pipe_blackboard_target[1]); 
+        close(pipe_target_blackboard[0]); 
 
-        // Chiudo altre pipe
         close(pipe_input_blackboard[0]); close(pipe_input_blackboard[1]);
         close(pipe_blackboard_drone[0]); close(pipe_blackboard_drone[1]);
         close(pipe_drone_blackboard[0]); close(pipe_drone_blackboard[1]);
@@ -145,19 +137,14 @@ int main(void) {
         snprintf(fd_in,  sizeof(fd_in),  "%d", pipe_blackboard_target[0]);
         snprintf(fd_out, sizeof(fd_out), "%d", pipe_target_blackboard[1]);
 
-        // Lancio target senza pipe watchdog
-        execlp("./exec/target", "./exec/target",
-               fd_in, fd_out, NULL);
-
+        execlp("./exec/target", "./exec/target", fd_in, fd_out, NULL);
         perror("exec target");
         exit(1);
     }
 
-    /* ================= PROCESSO BLACKBOARD ================= */
-
+    /* 4. BLACKBOARD PROCESS (Runs in Konsole) */
     pid_t pid_blackboard = fork();
     if (pid_blackboard == 0) {
-        // Setup pipe applicative
         close(pipe_input_blackboard[1]);
         close(pipe_drone_blackboard[1]);
         close(pipe_blackboard_drone[0]);
@@ -180,7 +167,6 @@ int main(void) {
         snprintf(fd_in_target, sizeof(fd_in_target), "%d", pipe_target_blackboard[0]);
         snprintf(fd_out_wd, sizeof(fd_out_wd), "%d", pipe_blackboard_watchdog[1]);
 
-        // Lancio blackboard senza pipe watchdog
         execlp("konsole", "konsole", "-e",
                "./exec/blackboard",
                fd_in_input, fd_in_drone,
@@ -192,15 +178,12 @@ int main(void) {
         exit(1);
     }
 
-    /* ================= PROCESSO DRONE ================= */
-
+    /* 5. DRONE PROCESS */
     pid_t pid_drone = fork();
     if (pid_drone == 0) {
-        // Setup pipe applicative
-        close(pipe_blackboard_drone[1]); // Legge da BB
-        close(pipe_drone_blackboard[0]); // Scrive a BB
+        close(pipe_blackboard_drone[1]); 
+        close(pipe_drone_blackboard[0]); 
 
-        // Chiudo altre pipe
         close(pipe_input_blackboard[0]); close(pipe_input_blackboard[1]);
         close(pipe_blackboard_obstacle[0]); close(pipe_blackboard_obstacle[1]);
         close(pipe_obstacle_blackboard[0]); close(pipe_obstacle_blackboard[1]);
@@ -212,20 +195,15 @@ int main(void) {
         snprintf(fd_in,  sizeof(fd_in),  "%d", pipe_blackboard_drone[0]);
         snprintf(fd_out, sizeof(fd_out), "%d", pipe_drone_blackboard[1]);
 
-        // Lancio drone senza pipe watchdog
-        execlp("./exec/drone", "./exec/drone",
-               fd_in, fd_out, NULL);
-
+        execlp("./exec/drone", "./exec/drone", fd_in, fd_out, NULL);
         perror("exec drone");
         exit(1);
     }
 
-    /* ================= PROCESSO WATCHDOG ================= */
-
+    /* 6. WATCHDOG PROCESS (Runs in Konsole) */
     pid_t pid_watchdog = fork();
     if (pid_watchdog == 0) {
-        
-        // Il Watchdog non usa nessuna pipe applicativa
+        // Close all application pipes except the one reading from BB (if used)
         close(pipe_input_blackboard[0]); close(pipe_input_blackboard[1]);
         close(pipe_blackboard_drone[0]); close(pipe_blackboard_drone[1]);
         close(pipe_drone_blackboard[0]); close(pipe_drone_blackboard[1]);
@@ -236,22 +214,18 @@ int main(void) {
         close(pipe_blackboard_watchdog[1]);
 
         char fd_in_bb[16];
-
         snprintf(fd_in_bb, sizeof(fd_in_bb), "%d", pipe_blackboard_watchdog[0]);
 
-        // Lancio watchdog senza argomenti (si sincronizza via file PID)
-        execlp("konsole", "konsole", "-e",
-               "./exec/watchdog", fd_in_bb, NULL);
-
+        execlp("konsole", "konsole", "-e", "./exec/watchdog", fd_in_bb, NULL);
         perror("exec watchdog");
         exit(1);
     }
 
     logMessage(LOG_PATH, "[MAIN] Watchdog started (pid=%d)", pid_watchdog);
 
-    /* ================= PARENT ================= */
-
-    // Chiudo tutte le pipe nel processo padre
+    /* --- SUB-SECTION: PARENT CLEANUP AND WAIT --- */
+    
+    // Close all pipes in the parent process (critical to avoid zombie pipes)
     close(pipe_input_blackboard[0]); close(pipe_input_blackboard[1]);
     close(pipe_blackboard_drone[0]); close(pipe_blackboard_drone[1]);
     close(pipe_drone_blackboard[0]); close(pipe_drone_blackboard[1]);
@@ -265,6 +239,7 @@ int main(void) {
         "[MAIN] All processes running (input=%d drone=%d bb=%d obst=%d targ=%d)",
         pid_input, pid_drone, pid_blackboard, pid_obst, pid_target);
 
+    // Wait for children to exit
     while (wait(NULL) > 0);
 
     logMessage(LOG_PATH, "[MAIN] PROGRAM EXIT");
