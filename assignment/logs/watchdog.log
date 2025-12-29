@@ -1,0 +1,30 @@
+[2025-12-29 13:56:18] (PID 8712) [WATCHDOG] Starting... PID: 8712
+[2025-12-29 13:56:18] (PID 8712) [WATCHDOG] PID published securely
+[2025-12-29 13:56:18] (PID 8712) [WATCHDOG] Warm-up phase (4 seconds)...
+[2025-12-29 13:56:22] (PID 8712) [WATCHDOG] Warm-up complete. Monitoring started.
+[2025-12-29 13:56:22] (PID 8712) [WATCHDOG] Process INPUT [PID 8714] is responsive!
+[2025-12-29 13:56:22] (PID 8712) [WATCHDOG] Process TARGET [PID 8658] is responsive!
+[2025-12-29 13:56:22] (PID 8712) [WATCHDOG] Process OBSTACLE [PID 8657] is responsive!
+[2025-12-29 13:56:22] (PID 8712) [WATCHDOG] Process DRONE [PID 8660] is responsive!
+[2025-12-29 13:56:22] (PID 8712) [WATCHDOG] Process BLACKBOARD [PID 8710] is responsive!
+[2025-12-29 13:56:22] (PID 8712) [WATCHDOG] All 5 processes checked. Waiting next cycle...
+[2025-12-29 13:56:24] (PID 8712) [WATCHDOG] Process INPUT [PID 8714] is responsive!
+[2025-12-29 13:56:24] (PID 8712) [WATCHDOG] Process TARGET [PID 8658] is responsive!
+[2025-12-29 13:56:24] (PID 8712) [WATCHDOG] Process OBSTACLE [PID 8657] is responsive!
+[2025-12-29 13:56:24] (PID 8712) [WATCHDOG] Process DRONE [PID 8660] is responsive!
+[2025-12-29 13:56:24] (PID 8712) [WATCHDOG] Process BLACKBOARD [PID 8710] is responsive!
+[2025-12-29 13:56:24] (PID 8712) [WATCHDOG] All 5 processes checked. Waiting next cycle...
+[2025-12-29 13:56:26] (PID 8712) [WATCHDOG] Process INPUT [PID 8714] is responsive!
+[2025-12-29 13:56:26] (PID 8712) [WATCHDOG] Process TARGET [PID 8658] is responsive!
+[2025-12-29 13:56:26] (PID 8712) [WATCHDOG] Process OBSTACLE [PID 8657] is responsive!
+[2025-12-29 13:56:26] (PID 8712) [WATCHDOG] Process DRONE [PID 8660] is responsive!
+[2025-12-29 13:56:26] (PID 8712) [WATCHDOG] Process BLACKBOARD [PID 8710] is responsive!
+[2025-12-29 13:56:26] (PID 8712) [WATCHDOG] All 5 processes checked. Waiting next cycle...
+[2025-12-29 13:56:28] (PID 8712) [WATCHDOG] Process INPUT [PID 8714] is responsive!
+[2025-12-29 13:56:28] (PID 8712) [WATCHDOG] Process TARGET [PID 8658] is responsive!
+[2025-12-29 13:56:28] (PID 8712) [WATCHDOG] Process OBSTACLE [PID 8657] is responsive!
+[2025-12-29 13:56:28] (PID 8712) [WATCHDOG] Process DRONE [PID 8660] is responsive!
+[2025-12-29 13:56:28] (PID 8712) [WATCHDOG] Process BLACKBOARD [PID 8710] is responsive!
+[2025-12-29 13:56:28] (PID 8712) [WATCHDOG] All 5 processes checked. Waiting next cycle...
+[2025-12-29 13:56:30] (PID 8712) [WATCHDOG] Received quit signal. Exiting.
+[2025-12-29 13:56:30] (PID 8712) [WD] Terminated Successfully
