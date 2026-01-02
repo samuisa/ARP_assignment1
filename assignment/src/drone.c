@@ -52,7 +52,7 @@ void wait_for_watchdog_pid() {
     int pid_temp;
     bool wd_found = false;
 
-    logMessage(LOG_PATH, "[DRONE] Waiting for Watchdog...");
+    //logMessage(LOG_PATH, "[DRONE] Waiting for Watchdog...");
 
     while (!wd_found) {
         fp = fopen(PID_FILE_PATH, "r");
@@ -70,18 +70,18 @@ void wait_for_watchdog_pid() {
         }
         if (!wd_found) usleep(200000);
     }
-    logMessage(LOG_PATH, "[DRONE] Watchdog found (PID %d)", watchdog_pid);
+    //logMessage(LOG_PATH, "[DRONE] Watchdog found (PID %d)", watchdog_pid);
 }
 
 void publish_my_pid(FILE *fp) {
     fprintf(fp, "%s %d\n", DRONE_PID_TAG, getpid());
-    logMessage(LOG_PATH, "[DRONE] PID published securely");
+    //logMessage(LOG_PATH, "[DRONE] PID published securely");
 }
 
 void send_position(Message msg, float x, float y, int fd_out){
     msg.type = MSG_TYPE_POSITION;
     snprintf(msg.data, sizeof(msg.data), "%f %f", x, y);
-    logMessage(LOG_PATH, "[DRONE] Sending position: (%f, %f)", x, y);
+    //logMessage(LOG_PATH, "[DRONE] Sending position: (%f, %f)", x, y);
     write(fd_out, &msg, sizeof(msg));
 }
 
@@ -91,8 +91,7 @@ void send_forces(Message msg, int fd_out, float drone_Fx, float drone_Fy,
     msg.type = MSG_TYPE_FORCE;
     snprintf(msg.data, sizeof(msg.data), "%f %f %f %f %f %f %f %f",
              drone_Fx, drone_Fy, obst_Fx, obst_Fy, wall_Fx, wall_Fy, abtrFx, abtrFy);
-    logMessage(LOG_PATH, "[DRONE] Sending forces: drone(%f,%f) obst(%f,%f) wall(%f,%f) targ(%f,%f)",
-               drone_Fx, drone_Fy, obst_Fx, obst_Fy, wall_Fx, wall_Fy, abtrFx, abtrFy);
+    //logMessage(LOG_PATH, "[DRONE] Sending forces: drone(%f,%f) obst(%f,%f) wall(%f,%f) targ(%f,%f)", drone_Fx, drone_Fy, obst_Fx, obst_Fy, wall_Fx, wall_Fy, abtrFx, abtrFy);
     write(fd_out, &msg, sizeof(msg));
 }
 
@@ -113,7 +112,7 @@ int main(int argc, char *argv[]) {
     int win_width = 0, win_height = 0;
     bool spawned = false;
 
-    logMessage(LOG_PATH, "[DRONE] Process started");
+    //logMessage(LOG_PATH, "[DRONE] Process started");
 
     struct sigaction sa;
     sa.sa_handler = watchdog_ping_handler;
@@ -126,7 +125,7 @@ int main(int argc, char *argv[]) {
 
     FILE *fp_pid = fopen(PID_FILE_PATH, "a");
     if (!fp_pid) {
-        logMessage(LOG_PATH, "[DRONE] Error opening PID file!");
+        //logMessage(LOG_PATH, "[DRONE] Error opening PID file!");
         exit(1);
     }
     int fd_pid = fileno(fp_pid);
@@ -167,7 +166,7 @@ int main(int argc, char *argv[]) {
                 case MSG_TYPE_INPUT: {
                     // Force Control Logic (Keys to Force Vector)
                     char ch = msg.data[0];
-                    logMessage(LOG_PATH, "[DRONE] Input received: '%c'", ch);
+                    //logMessage(LOG_PATH, "[DRONE] Input received: '%c'", ch);
                     if(ch == 'q') goto quit;
 
                     bool isValid = true;
@@ -189,13 +188,13 @@ int main(int argc, char *argv[]) {
                         default: isValid = false; break;
                     }
                     if(isValid)
-                        logMessage(LOG_PATH, "[DRONE] Forces updated: Fx=%f Fy=%f", drn.Fx, drn.Fy);
+                        //logMessage(LOG_PATH, "[DRONE] Forces updated: Fx=%f Fy=%f", drn.Fx, drn.Fy);
                     break;
                 }
 
                 case MSG_TYPE_OBSTACLES: { 
                     // Deserialize Obstacles
-                    logMessage(LOG_PATH, "[DRONE] Obstacles metadata received: %s", msg.data); 
+                    //logMessage(LOG_PATH, "[DRONE] Obstacles metadata received: %s", msg.data); 
                     int count; 
                     sscanf(msg.data, "%d", &count); 
                     free(obstacles); 
@@ -211,7 +210,7 @@ int main(int argc, char *argv[]) {
 
                 case MSG_TYPE_TARGETS: { 
                     // Deserialize Targets
-                    logMessage(LOG_PATH, "[DRONE] Targets metadata received: %s", msg.data); 
+                    //logMessage(LOG_PATH, "[DRONE] Targets metadata received: %s", msg.data); 
                     int count; 
                     sscanf(msg.data, "%d", &count); 
                     free(targets); targets = count ? malloc(sizeof(Point)*count) : NULL; 
@@ -237,7 +236,7 @@ int main(int argc, char *argv[]) {
             float dy = drn.y - ((float)targets[i].y + 0.5);
             float d = sqrt(dx*dx + dy*dy) - 0.5f;
 
-            logMessage(LOG_PATH, "distanza da target %d d = %f", i, d);
+            //logMessage(LOG_PATH, "distanza da target %d d = %f", i, d);
             if(d < rho && d > 0.1f){
                 float F = eta * (1.0f/d - 1.0f/rho) / (d*d);
                 abtrFx += F * dx/d;
