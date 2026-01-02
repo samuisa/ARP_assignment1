@@ -16,6 +16,9 @@
 #include <sys/types.h>
 #include <sys/select.h> 
 #include <sys/file.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <netdb.h>
 
 #include "app_blackboard.h"
 #include "app_common.h"
@@ -65,6 +68,53 @@ static int num_targets = 0;
 // System handles
 static WINDOW *status_win = NULL;
 static pid_t watchdog_pid = -1;
+
+/* ======================================================================================
+ * SECTION 1: CONNESSIONE AL SERVER
+ * ====================================================================================== */
+
+
+int connect_to_server(const char *host, int port) {
+    int sockfd;
+    struct sockaddr_in serv_addr;
+    struct hostent *server;
+
+    sockfd = socket(AF_INET, SOCK_STREAM, 0);
+    if (sockfd < 0) {
+        perror("[BB] socket");
+        logMessage(LOG_PATH, "[BB] NOT Create socket...");
+        exit(1);
+    }
+
+    logMessage(LOG_PATH, "[BB] Create socket...");
+
+    server = gethostbyname(host);
+    if (!server) {
+        fprintf(stderr, "[BB] no such host\n");
+        logMessage(LOG_PATH, "[BB] NOT Create host...");
+        exit(1);
+    }
+
+    logMessage(LOG_PATH, "[BB] Create host...");
+
+    bzero(&serv_addr, sizeof(serv_addr));
+    serv_addr.sin_family = AF_INET;
+    memcpy(&serv_addr.sin_addr.s_addr,
+           server->h_addr,
+           server->h_length);
+    serv_addr.sin_port = htons(port);
+
+    if (connect(sockfd, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0) {
+        perror("[BB] connect");
+        logMessage(LOG_PATH, "[BB] NOT CONNECTED...");
+        logMessage(LOG_PATH, "errno=%d\n", errno);
+        exit(1);
+    }
+    logMessage(LOG_PATH, "[BB] CONNECTED...");
+
+    return sockfd;
+}
+
 
 /* ======================================================================================
  * SECTION 2: WATCHDOG INTEGRATION
@@ -294,7 +344,7 @@ void reposition_and_redraw(WINDOW **win_ptr) {
  * Helper functions to send window dimensions to other processes.
  * ====================================================================================== */
 
-void send_window_size(WINDOW *win, int fd_drone, int fd_obst, int fd_targ) {
+void send_window_size(WINDOW *win, int fd_drone, int fd_obst, int fd_targ, int server_fd) {
     set_state(STATE_BROADCASTING); // Update State
     Message msg;
     int max_y, max_x;
@@ -306,6 +356,12 @@ void send_window_size(WINDOW *win, int fd_drone, int fd_obst, int fd_targ) {
     write(fd_drone, &msg, sizeof(msg));
     write(fd_obst,  &msg, sizeof(msg));
     write(fd_targ,  &msg, sizeof(msg));
+
+    char msg_server[64];
+    snprintf(msg_server, sizeof(msg_server), "size %d %d\n", max_x, max_y);
+    write(server_fd, msg_server, strlen(msg_server));
+    
+    logMessage(LOG_PATH, "[BB] SEND WINDOW %s", msg_server);
 }
 
 void send_resize(WINDOW *win, int fd_drone) {
@@ -338,6 +394,10 @@ int main(int argc, char *argv[]) {
     int fd_targ_write  = atoi(argv[6]);
     int fd_targ_read   = atoi(argv[7]);
     int fd_wd_write    = atoi(argv[8]);
+
+    int server_fd = connect_to_server("localhost", 5000);
+    logMessage(LOG_PATH, "[BB] Connected to server");
+
 
     signal(SIGPIPE, SIG_IGN); 
 
@@ -382,7 +442,8 @@ int main(int argc, char *argv[]) {
     WINDOW *win = create_window(LINES - 1, COLS, 1, 0);
     
     reposition_and_redraw(&win);
-    send_window_size(win, fd_drone_write, fd_obst_write, fd_targ_write);
+    send_window_size(win, fd_drone_write, fd_obst_write, fd_targ_write, server_fd);
+
 
     // Variables for multiplexing and logic
     float drn_Fx = 0.0f, drn_Fy = 0.0f;
@@ -587,6 +648,10 @@ int main(int argc, char *argv[]) {
             }
         }
     }
+
+    close(server_fd);
+    logMessage(LOG_PATH, "[BB] close serverfd");
+
 
     /* --- SUB-SECTION: CLEANUP --- */
     if (win) destroy_window(win);
