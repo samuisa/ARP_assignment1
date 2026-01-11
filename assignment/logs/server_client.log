@@ -1,9 +1,4 @@
-[2026-01-11 13:11:16] (PID 3196) ip address: 0.0.0.0, port number: 2001
-[2026-01-11 13:11:16] (PID 3196) [SERVER] Waiting for client...
-[2026-01-11 13:11:34] (PID 3208) ip address: 127.0.0.1, port number: 2001
-[2026-01-11 13:11:34] (PID 3208) [CLIENT] Connecting to 127.0.0.1:2001 ...
-[2026-01-11 13:11:34] (PID 3196) [SERVER] Client connected.
-[2026-01-11 13:11:34] (PID 3208) [CLIENT] Connected.
-[2026-01-11 13:11:34] (PID 3208) [NET] Handshake: ok received
-[2026-01-11 13:11:34] (PID 3196) [NET] Handshake: ook received
-[2026-01-11 13:11:34] (PID 3208) SIZE RECEIVED: WIDTH = 124, HEIGHT = 35
+[2026-01-11 20:07:36] (PID 5683) ip address: 0.0.0.0, port number: 5001
+[2026-01-11 20:07:36] (PID 5683) [SERVER] Waiting for client...
+[2026-01-11 20:08:00] (PID 5683) [SERVER] Client connected.
+[2026-01-11 20:08:00] (PID 5683) [NET] Handshake: ook received

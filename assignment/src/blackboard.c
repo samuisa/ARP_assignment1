@@ -110,45 +110,6 @@ void coords_virt_to_local(float vx, float vy, int win_h, float *lx, float *ly) {
     *ly = (float)win_h - vy;
 }
 
-// Send Message with ACK waiting
-void net_send_pos(int fd, float x, float y, int win_h) {
-    if (fd < 0) return;
-    
-    float vx, vy;
-    coords_local_to_virt(x, y, win_h, &vx, &vy); // Convert to virtual
-
-    char buf[64];
-    snprintf(buf, sizeof(buf), "%.2f %.2f", vx, vy);
-    
-    // Write
-    if (write(fd, buf, strlen(buf)) < 0) return;
-
-    // Wait ACK (Blocking for simplicity as per requirements)
-    char ack[2];
-    read(fd, ack, 1); 
-}
-
-// Receive Message and send ACK
-int net_recv_pos(int fd, float *rx, float *ry, int win_h) {
-    if (fd < 0) return 0;
-    
-    char buf[64];
-    memset(buf, 0, sizeof(buf));
-    
-    ssize_t n = read(fd, buf, sizeof(buf)-1);
-    if (n <= 0) return 0; // Disconnected or error
-    
-    // Send ACK immediately
-    write(fd, ACK_MSG, ACK_LEN);
-
-    float vx, vy;
-    if (sscanf(buf, "%f %f", &vx, &vy) == 2) {
-        coords_virt_to_local(vx, vy, win_h, rx, ry); // Convert back to local
-        return 1;
-    }
-    return 0;
-}
-
 /* ======================================================================================
  * SECTION: NETWORK SETUP
  * ====================================================================================== */
@@ -607,6 +568,13 @@ int main(int argc, char *argv[]) {
     }
     port_number = atoi(argv[11]);
 
+    if (current_mode != MODE_STANDALONE) {
+        num_obstacles = 0;
+        num_targets = 0;
+        watchdog_pid = -1;
+    }
+
+
     // B. Setup Watchdog Signal Handler
     struct sigaction sa;
     sa.sa_handler = watchdog_ping_handler;
@@ -696,7 +664,6 @@ int main(int argc, char *argv[]) {
     while (1) {
         set_state(STATE_IDLE); // Mark as Idle before select()
 
-        logMessage(LOG_PATH, "PORCODIO");
         // 1. Handle UI Input (Exit / Resize)
         int ch = getch();
         if (ch != ERR) {
@@ -746,9 +713,6 @@ int main(int argc, char *argv[]) {
         if (fd_targ_read > max_fd) max_fd = fd_targ_read;
         max_fd += 1;
 
-        //int max_fd = (sock_fd > fd_drone_read) ? sock_fd : fd_drone_read;
-        //if (fd_input_read > max_fd) max_fd = fd_input_read;
-
         tv.tv_sec  = 0;
         tv.tv_usec = 50000; // 50ms Timeout
 
@@ -785,10 +749,6 @@ int main(int argc, char *argv[]) {
 
                 case MSG_TYPE_POSITION:{
                     sscanf(msg.data, "%f %f", &current_x, &current_y);
-
-                    /*if (sock_fd >= 0) {
-                        net_send_pos(sock_fd, current_x, current_y, win_h);
-                    }*/
 
                     redraw_scene(win); // Sets STATE_RENDERING
                     
@@ -922,73 +882,144 @@ int main(int argc, char *argv[]) {
         // SERVER LOGIC (ACTIVE): Invia dati periodicamente
         // ============================================================
         if (current_mode == MODE_SERVER && sock_fd >= 0) {
-            // Nota: Per non bloccare tutto troppo spesso, potresti volerlo fare 
-            // solo quando i dati cambiano o con un timer, ma qui seguiamo il protocollo sequenziale.
-            
-            char buf[64];
-            char pos_str[64];
 
-            // 1. SEND DRONE
-            send_str(sock_fd, "drone");         // cmd: drone
-            
-            snprintf(pos_str, sizeof(pos_str), "%.2f %.2f", current_x, current_y);
-            send_str(sock_fd, pos_str);         // data: x y
-            
-            recv_str(sock_fd, buf);             // ack: dok <drone> (Wait blocking)
-            
-            // 2. SEND OBSTACLE (Request remote pos)
-            send_str(sock_fd, "obst");          // cmd: obst
-            
-            recv_str(sock_fd, pos_str);         // data: x y (from client)
-            sscanf(pos_str, "%f %f", &remote_x, &remote_y); // Update remote representation
-            
-            send_str(sock_fd, "pok");           // ack: pok <obstacle>
-            
-            // Aggiorna l'ostacolo remoto per la fisica del Server
-            // (Il server vede il drone client come un ostacolo)
-             /* Point p; p.x = (int)remote_x; p.y = (int)remote_y; ... logica ostacolo ... */
+            char cmd[64];
+            char buf[64];
+
+            /* ================================
+            * 1. SEND DRONE (server → client)
+            * ================================ */
+            send_str(sock_fd, "drone");
+
+            float vx, vy;
+            coords_local_to_virt(current_x, current_y, win_h, &vx, &vy);
+
+            snprintf(buf, sizeof(buf), "%.2f %.2f", vx, vy);
+            send_str(sock_fd, buf);
+
+            if (!recv_str(sock_fd, cmd)) break;     // expect "dok"
+
+            /* ================================
+            * 2. RECV OBST (client → server)
+            * ================================ */
+            send_str(sock_fd, "obst");
+
+            if (!recv_str(sock_fd, buf)) break;     // expect x y
+
+            float ovx, ovy;
+            sscanf(buf, "%f %f", &ovx, &ovy);
+
+            coords_virt_to_local(ovx, ovy, win_h, &remote_x, &remote_y);
+
+            send_str(sock_fd, "pok");
+
+            /* ================================
+            * remote_x / remote_y
+            * = OSTACOLO per la fisica server
+            * ================================ */
         }
+
 
         // ============================================================
         // CLIENT LOGIC (REACTIVE): Risponde ai comandi del Server
         // ============================================================
         if (current_mode == MODE_CLIENT && sock_fd >= 0 && FD_ISSET(sock_fd, &readfds)) {
+
             char cmd[64];
             char buf[64];
-            
-            // 1. RCV COMMAND (x)
-            if (recv_str(sock_fd, cmd) == 0) {
-                close(sock_fd); sock_fd = -1;
-                break; 
+
+            if (!recv_str(sock_fd, cmd)) {
+                close(sock_fd);
+                sock_fd = -1;
+                break;
             }
 
-            // 2. SWITCH X
-            if (strcmp(cmd, "q") == 0) {
-                send_str(sock_fd, "qok");
-                break; // Exit loop
-            }
-            else if (strcmp(cmd, "drone") == 0) {
-                // RCV X, Y
+            /* ================================
+            * DRONE (server → client)
+            * ================================ */
+            if (strcmp(cmd, "drone") == 0) {
+
                 recv_str(sock_fd, buf);
-                sscanf(buf, "%f %f", &remote_x, &remote_y); // Update remote drone pos
-                
-                // SND DOK <DRONE>
-                char ack[64];
-                snprintf(ack, sizeof(ack), "dok %.2f %.2f", remote_x, remote_y);
-                send_str(sock_fd, ack);
+
+                float vx, vy;
+                sscanf(buf, "%f %f", &vx, &vy);
+
+                coords_virt_to_local(vx, vy, win_h, &remote_x, &remote_y);
+
+                send_str(sock_fd, "dok");
+                redraw_scene(win);
             }
+
+            /* ================================
+            * OBST (client → server)
+            * ================================ */
             else if (strcmp(cmd, "obst") == 0) {
-                // SND X, Y (Invio la mia posizione come ostacolo per il server)
-                char my_pos[64];
-                snprintf(my_pos, sizeof(my_pos), "%.2f %.2f", current_x, current_y);
-                send_str(sock_fd, my_pos);
-                
-                // RCV POK <OBSTACLE>
-                recv_str(sock_fd, buf);
+
+                float vx, vy;
+                coords_local_to_virt(current_x, current_y, win_h, &vx, &vy);
+
+                snprintf(buf, sizeof(buf), "%.2f %.2f", vx, vy);
+                send_str(sock_fd, buf);
+
+                recv_str(sock_fd, cmd); // expect "pok"
             }
-            
-            redraw_scene(win); // Aggiorna grafica dopo scambio rete
+
+            /* ================================
+            * QUIT
+            * ================================ */
+            else if (strcmp(cmd, "q") == 0) {
+                send_str(sock_fd, "qok");
+                break;
+            }
         }
+            char cmd[64];
+            char buf[64];
+
+            if (!recv_str(sock_fd, cmd)) {
+                close(sock_fd);
+                sock_fd = -1;
+                break;
+            }
+
+            /* ================================
+            * DRONE (server → client)
+            * ================================ */
+            if (strcmp(cmd, "drone") == 0) {
+
+                recv_str(sock_fd, buf);
+
+                float vx, vy;
+                sscanf(buf, "%f %f", &vx, &vy);
+
+                coords_virt_to_local(vx, vy, win_h, &remote_x, &remote_y);
+
+                send_str(sock_fd, "dok");
+                redraw_scene(win);
+            }
+
+            /* ================================
+            * OBST (client → server)
+            * ================================ */
+            else if (strcmp(cmd, "obst") == 0) {
+
+                float vx, vy;
+                coords_local_to_virt(current_x, current_y, win_h, &vx, &vy);
+
+                snprintf(buf, sizeof(buf), "%.2f %.2f", vx, vy);
+                send_str(sock_fd, buf);
+
+                recv_str(sock_fd, cmd); // expect "pok"
+            }
+
+            /* ================================
+            * QUIT
+            * ================================ */
+            else if (strcmp(cmd, "q") == 0) {
+                send_str(sock_fd, "qok");
+                break;
+            }
+        }
+
     }
 
     if (sock_fd >= 0) close(sock_fd);
