@@ -501,8 +501,11 @@ void send_window_size(WINDOW *win, int fd_drone, int fd_obst, int fd_targ) {
     snprintf(msg.data, sizeof(msg.data), "%d %d", max_x, max_y);
 
     write(fd_drone, &msg, sizeof(msg));
-    write(fd_obst,  &msg, sizeof(msg));
-    write(fd_targ,  &msg, sizeof(msg));
+    if(current_mode == MODE_STANDALONE){
+        write(fd_obst,  &msg, sizeof(msg));
+        write(fd_targ,  &msg, sizeof(msg));
+    }
+    
 }
 
 void send_resize(WINDOW *win, int fd_drone) {
@@ -542,24 +545,34 @@ void run_network_handshake(int mode, int fd, int *w, int *h) {
         // 1. Send OK, Recv OOK
         send_str(fd, "ok");
         recv_str(fd, buf); 
-        if (strcmp(buf, "ook") != 0) logMessage(LOG_PATH, "[NET] Handshake Error: expected ook");
-
+        if (strcmp(buf, "ook") != 0) {
+            logMessage(LOG_PATH_SC, "[NET] Handshake Error: expected ook");
+        }else{
+            logMessage(LOG_PATH_SC, "[NET] Handshake: ook received");
+        }
         // 2. Send Size, Recv SOK
         snprintf(dim_str, sizeof(dim_str), "%d %d", *w, *h);
         send_str(fd, dim_str);
-        recv_str(fd, buf); // Expect "sok <size>"
+        recv_str(fd, buf);
+        // Expect "sok <size>"
         // (Opzionale: parsing di buf per verificare che contenga "sok")
         
     } else {
         // --- CLIENT SIDE ---
         // 1. Recv OK, Send OOK
         recv_str(fd, buf);
-        if (strcmp(buf, "ok") != 0) logMessage(LOG_PATH, "[NET] Handshake Error: expected ok");
+        if (strcmp(buf, "ok") != 0){ 
+            logMessage(LOG_PATH_SC, "[NET] Handshake Error: expected ok");
+        }else{
+            logMessage(LOG_PATH_SC, "[NET] Handshake: ok received");
+        }
         send_str(fd, "ook");
 
         // 2. Recv Size, Send SOK
         recv_str(fd, dim_str);
         sscanf(dim_str, "%d %d", w, h);
+
+        logMessage(LOG_PATH_SC,"SIZE RECEIVED: WIDTH = %d, HEIGHT = %d", *w, *h);
         
         char reply[128];
         snprintf(reply, sizeof(reply), "sok %s", dim_str);
@@ -615,7 +628,7 @@ int main(int argc, char *argv[]) {
         exit(1);
     }
 
-    logMessage(LOG_PATH, "ip address: %s, port number: %d", server_address, port_number);
+    logMessage(LOG_PATH_SC, "ip address: %s, port number: %d", server_address, port_number);
 
     int fd_pid = fileno(fp_pid);
     flock(fd_pid, LOCK_EX); // Acquire Lock
@@ -657,6 +670,8 @@ int main(int argc, char *argv[]) {
         }
     }
 
+    
+
     // E. Initial Window Creation & IPC
     status_win = newwin(1, COLS, 0, 0);
     win = create_window(LINES - 1, COLS, 1, 0);
@@ -681,6 +696,7 @@ int main(int argc, char *argv[]) {
     while (1) {
         set_state(STATE_IDLE); // Mark as Idle before select()
 
+        logMessage(LOG_PATH, "PORCODIO");
         // 1. Handle UI Input (Exit / Resize)
         int ch = getch();
         if (ch != ERR) {
@@ -770,9 +786,9 @@ int main(int argc, char *argv[]) {
                 case MSG_TYPE_POSITION:{
                     sscanf(msg.data, "%f %f", &current_x, &current_y);
 
-                    if (sock_fd >= 0) {
+                    /*if (sock_fd >= 0) {
                         net_send_pos(sock_fd, current_x, current_y, win_h);
-                    }
+                    }*/
 
                     redraw_scene(win); // Sets STATE_RENDERING
                     
@@ -942,7 +958,6 @@ int main(int argc, char *argv[]) {
             
             // 1. RCV COMMAND (x)
             if (recv_str(sock_fd, cmd) == 0) {
-                // Connection closed
                 close(sock_fd); sock_fd = -1;
                 break; 
             }
