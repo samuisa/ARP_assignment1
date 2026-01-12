@@ -1,5 +1,5 @@
 /* ======================================================================================
- * SECTION 1: INCLUDES AND GLOBALS
+ * FILE: input.c
  * ====================================================================================== */
 #include <ncurses.h>
 #include <unistd.h>
@@ -20,42 +20,22 @@
 
 static volatile pid_t watchdog_pid = -1;
 
-/* ======================================================================================
- * SECTION 2: UI HELPER
- * Draws the control legend on the screen.
- * ====================================================================================== */
 void draw_legend() {
     int start_y = 6;
     int col_1 = 15, col_2 = 22, col_3 = 29;
-
     mvprintw(0, 0, "=== Drone Legend Control ===");
     mvprintw(2, 0, "Press '%c' to exit | Press the buttons below to control the drone", KEY_QUIT);
-
     mvprintw(4, 0, "------------------ LEGEND ------------------");
-
-    mvprintw(start_y, col_1, "[ w ]");
-    mvprintw(start_y, col_2, "[ e ]");
-    mvprintw(start_y, col_3, "[ r ]");
-
-    mvprintw(start_y + 2, col_1, "[ s ]");
-    mvprintw(start_y + 2, col_2, "[ d ]");
-    mvprintw(start_y + 2, col_3, "[ f ]");
-
-    mvprintw(start_y + 4, col_1, "[ x ]");
-    mvprintw(start_y + 4, col_2, "[ c ]");
-    mvprintw(start_y + 4, col_3, "[ v ]");
-
+    mvprintw(start_y, col_1, "[ w ]"); mvprintw(start_y, col_2, "[ e ]"); mvprintw(start_y, col_3, "[ r ]");
+    mvprintw(start_y + 2, col_1, "[ s ]"); mvprintw(start_y + 2, col_2, "[ d ]"); mvprintw(start_y + 2, col_3, "[ f ]");
+    mvprintw(start_y + 4, col_1, "[ x ]"); mvprintw(start_y + 4, col_2, "[ c ]"); mvprintw(start_y + 4, col_3, "[ v ]");
     mvprintw(start_y + 6, 0, "--------------------------------------------");
     mvprintw(start_y + 8, 0, "Feedback: ");
     refresh();
 }
 
-/* ======================================================================================
- * SECTION 3: WATCHDOG UTILITIES
- * ====================================================================================== */
 void publish_my_pid(FILE *fp) {
     fprintf(fp, "%s %d\n", INPUT_PID_TAG, getpid());
-    logMessage(LOG_PATH, "[INPUT] PID published securely");
 }
 
 void wait_for_watchdog_pid() {
@@ -63,9 +43,6 @@ void wait_for_watchdog_pid() {
     char line[256], tag[128];
     int pid_temp;
     bool wd_found = false;
-
-    logMessage(LOG_PATH, "[INPUT] Waiting for Watchdog...");
-
     while (!wd_found) {
         fp = fopen(PID_FILE_PATH, "r");
         if (fp) {
@@ -82,7 +59,6 @@ void wait_for_watchdog_pid() {
         }
         if (!wd_found) usleep(200000);
     }
-    logMessage(LOG_PATH, "[INPUT] Watchdog found (PID %d)", watchdog_pid);
 }
 
 void watchdog_ping_handler(int signo) {
@@ -90,9 +66,6 @@ void watchdog_ping_handler(int signo) {
     if(watchdog_pid > 0) kill(watchdog_pid, SIGUSR2);
 }
 
-/* ======================================================================================
- * SECTION 4: MAIN EXECUTION (INPUT CAPTURE)
- * ====================================================================================== */
 int main(int argc, char *argv[]) {
     if(argc < 3) return 1;
 
@@ -105,15 +78,9 @@ int main(int argc, char *argv[]) {
         sigemptyset(&sa.sa_mask);
         sa.sa_flags = SA_RESTART;
         sigaction(SIGUSR1, &sa, NULL);
-
         wait_for_watchdog_pid();
-
         FILE *fp_pid = fopen(PID_FILE_PATH, "a");
-        if (!fp_pid) {
-            logMessage(LOG_PATH, "[DRONE] Error opening PID file!");
-            exit(1);
-        }
-
+        if (!fp_pid) exit(1);
         int fd_pid = fileno(fp_pid);
         flock(fd_pid, LOCK_EX); 
         publish_my_pid(fp_pid);
@@ -121,6 +88,21 @@ int main(int argc, char *argv[]) {
         flock(fd_pid, LOCK_UN);
         fclose(fp_pid);
     }
+
+    /*struct sigaction sa;
+        sa.sa_handler = watchdog_ping_handler;
+        sigemptyset(&sa.sa_mask);
+        sa.sa_flags = SA_RESTART;
+        sigaction(SIGUSR1, &sa, NULL);
+        wait_for_watchdog_pid();
+        FILE *fp_pid = fopen(PID_FILE_PATH, "a");
+        if (!fp_pid) exit(1);
+        int fd_pid = fileno(fp_pid);
+        flock(fd_pid, LOCK_EX); 
+        publish_my_pid(fp_pid);
+        fflush(fp_pid);
+        flock(fd_pid, LOCK_UN);
+        fclose(fp_pid);*/
     
     int ch;
     char msg_buf[2];
@@ -130,45 +112,27 @@ int main(int argc, char *argv[]) {
     noecho();
     keypad(stdscr, TRUE);
     nodelay(stdscr, TRUE);
-
-    logMessage(LOG_PATH, "[CTRL] Main started, fd_out=%d", fd_out);
-
     draw_legend();
 
-    // --- MAIN LOOP ---
     while(1) {
-
         ch = getch();
 
         if(ch == ERR) {
-            usleep(10000);
+            usleep(10000); // 10ms sleep to save CPU
             continue;
         }
 
         msg_buf[0] = (char)ch;
         msg_buf[1] = '\0';
 
-        // Send character to Blackboard (fd_out)
-        if(write(fd_out, msg_buf, 2) < 0) {
-            perror("[INPUT] write to fd_out");
-            break;
-        }
-
-        logMessage(LOG_PATH, "[INPUT] Input captured: '%c' (ASCII %d) sent to fd_out=%d",
-                   ch, ch, fd_out);
-
+        if(write(fd_out, msg_buf, 2) < 0) break;
         mvprintw(14, 0, "Feedback: '%c'  ", ch);
         refresh();
 
-        if(ch == KEY_QUIT) {
-            logMessage(LOG_PATH, "[INPUT] Quit command received");
-            break;
-        }
+        if(ch == KEY_QUIT) break;
     }
 
     endwin();
     close(fd_out);
-
-    logMessage(LOG_PATH, "[CTRL] Main terminated, pipes closed");
     return 0;
 }

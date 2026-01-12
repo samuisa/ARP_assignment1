@@ -1,6 +1,9 @@
 /* ======================================================================================
- * SECTION 1: INCLUDES AND CONFIGURATION
- * Headers and Physics constants (EPSILON).
+ * FILE: drone.c
+ * Logic: 
+ * 1. Flush Input Pipe (Handle all pending keys/obstacles)
+ * 2. Calculate Physics (High Frequency ~1000Hz)
+ * 3. Send Output to Blackboard (Throttled ~30Hz to avoid pipe flooding)
  * ====================================================================================== */
 #include <stdio.h>
 #include <stdlib.h>
@@ -19,28 +22,28 @@
 #include "app_common.h"
 #include "log.h"
 #include "process_pid.h"
+
 #undef EPSILON
 #define EPSILON 0.001f
+
+// Configurazione Frequenza
+#define PHYSICS_DT_SEC 0.001f    // 1ms physics step
+#define RENDER_FPS 30            // 30 invii al secondo alla blackboard
+#define RENDER_DT_NS (1000000000L / RENDER_FPS)
 
 typedef enum {
     STATE_INIT, STATE_WAITING_INPUT, STATE_PROCESSING_INPUT,
     STATE_CALCULATING_PHYSICS, STATE_SENDING_OUTPUT, STATE_IDLE
 } ProcessState;
 
-// Global Game Objects
 static Point *obstacles = NULL;
 static int num_obstacles = 0;
 static Point *targets = NULL;
 static int num_targets = 0;
-
 static volatile pid_t watchdog_pid = -1; 
 static volatile sig_atomic_t current_state = STATE_INIT;
 
-/* ======================================================================================
- * SECTION 2: WATCHDOG & IPC HELPERS
- * Signal handlers, PID registration, and Pipe sending functions.
- * ====================================================================================== */
-
+// --- HELPERS ---
 void watchdog_ping_handler(int sig) {
     (void)sig; 
     if (watchdog_pid > 0) kill(watchdog_pid, SIGUSR2);
@@ -51,9 +54,6 @@ void wait_for_watchdog_pid() {
     char line[256], tag[128];
     int pid_temp;
     bool wd_found = false;
-
-    //logMessage(LOG_PATH, "[DRONE] Waiting for Watchdog...");
-
     while (!wd_found) {
         fp = fopen(PID_FILE_PATH, "r");
         if (fp) {
@@ -70,18 +70,15 @@ void wait_for_watchdog_pid() {
         }
         if (!wd_found) usleep(200000);
     }
-    //logMessage(LOG_PATH, "[DRONE] Watchdog found (PID %d)", watchdog_pid);
 }
 
 void publish_my_pid(FILE *fp) {
     fprintf(fp, "%s %d\n", DRONE_PID_TAG, getpid());
-    //logMessage(LOG_PATH, "[DRONE] PID published securely");
 }
 
 void send_position(Message msg, float x, float y, int fd_out){
     msg.type = MSG_TYPE_POSITION;
     snprintf(msg.data, sizeof(msg.data), "%f %f", x, y);
-    //logMessage(LOG_PATH, "[DRONE] Sending position: (%f, %f)", x, y);
     write(fd_out, &msg, sizeof(msg));
 }
 
@@ -91,13 +88,14 @@ void send_forces(Message msg, int fd_out, float drone_Fx, float drone_Fy,
     msg.type = MSG_TYPE_FORCE;
     snprintf(msg.data, sizeof(msg.data), "%f %f %f %f %f %f %f %f",
              drone_Fx, drone_Fy, obst_Fx, obst_Fy, wall_Fx, wall_Fy, abtrFx, abtrFy);
-    //logMessage(LOG_PATH, "[DRONE] Sending forces: drone(%f,%f) obst(%f,%f) wall(%f,%f) targ(%f,%f)", drone_Fx, drone_Fy, obst_Fx, obst_Fy, wall_Fx, wall_Fy, abtrFx, abtrFy);
     write(fd_out, &msg, sizeof(msg));
 }
 
-/* ======================================================================================
- * SECTION 3: MAIN EXECUTION & PHYSICS ENGINE
- * ====================================================================================== */
+long get_time_diff_ns(struct timespec t1, struct timespec t2) {
+    return (t2.tv_sec - t1.tv_sec) * 1000000000L + (t2.tv_nsec - t1.tv_nsec);
+}
+
+// --- MAIN ---
 int main(int argc, char *argv[]) {
     if (argc < 4) return 1;
 
@@ -106,6 +104,7 @@ int main(int argc, char *argv[]) {
     int mode    = atoi(argv[3]);
 
     signal(SIGPIPE, SIG_IGN); 
+    // Fondamentale: Pipe Non-Blocking per svuotarla velocemente
     fcntl(fd_in, F_SETFL, O_NONBLOCK);
 
     Drone drn = {0};
@@ -113,24 +112,16 @@ int main(int argc, char *argv[]) {
     int win_width = 0, win_height = 0;
     bool spawned = false;
 
-    //logMessage(LOG_PATH, "[DRONE] Process started");
-
+    // Watchdog Setup
     if(mode == MODE_STANDALONE){
-
         struct sigaction sa;
         sa.sa_handler = watchdog_ping_handler;
         sigemptyset(&sa.sa_mask);
         sa.sa_flags = SA_RESTART;
         sigaction(SIGUSR1, &sa, NULL);
-
-        // --- WATCHDOG SYNCHRONIZATION ---
         wait_for_watchdog_pid();
-
         FILE *fp_pid = fopen(PID_FILE_PATH, "a");
-        if (!fp_pid) {
-            //logMessage(LOG_PATH, "[DRONE] Error opening PID file!");
-            exit(1);
-        }
+        if (!fp_pid) exit(1);
         int fd_pid = fileno(fp_pid);
         flock(fd_pid, LOCK_EX); 
         publish_my_pid(fp_pid);
@@ -139,44 +130,50 @@ int main(int argc, char *argv[]) {
         fclose(fp_pid);
     }
 
-    // --- MAIN LOOP ---
-    while (1) {
-        current_state = STATE_WAITING_INPUT;
-        
-        // 1. NON-BLOCKING READ for Inputs/Updates
-        ssize_t n = read(fd_in, &msg, sizeof(Message));
-        
-        if (n < 0 && errno == EINTR) {
-            continue;
-        }
+    struct timespec last_render_time;
+    clock_gettime(CLOCK_MONOTONIC, &last_render_time);
 
-        if (n > 0) {
-            current_state = STATE_PROCESSING_INPUT;
+    // --- MAIN SIMULATION LOOP ---
+    while (1) {
+        
+        // ====================================================================
+        // STEP 1: INPUT FLUSHING (Drain the pipe)
+        // Legge TUTTI i messaggi disponibili. Se la blackboard manda 10 messaggi,
+        // li processiamo tutti ORA invece di aspettare 10 cicli.
+        // ====================================================================
+        current_state = STATE_PROCESSING_INPUT;
+        
+        while(1) {
+            ssize_t n = read(fd_in, &msg, sizeof(Message));
+            if (n < 0) {
+                if (errno == EAGAIN || errno == EWOULDBLOCK) break; // Pipe vuota
+                if (errno == EINTR) continue; // Interrotto da segnale, riprova
+                break; // Errore vero
+            }
+            if (n == 0) break; // EOF
+
+            // Handle Message
             switch (msg.type) {
                 case MSG_TYPE_SIZE: {
                     sscanf(msg.data, "%d %d", &win_width, &win_height);
                     if (!spawned) {
-                        // Center spawn
-                        drn.x = win_width / 2.0f;
-                        drn.y = win_height / 2.0f;
+                        // Logica Spawn (come richiesto)
+                        if (mode == MODE_SERVER) { drn.x = 10.0f; drn.y = 10.0f; } 
+                        else if (mode == MODE_CLIENT) { drn.x = (float)win_width - 5.0f; drn.y = (float)win_height - 5.0f; } 
+                        else { drn.x = win_width / 2.0f; drn.y = win_height / 2.0f; }
+                        
                         drn.x_1 = drn.x_2 = drn.x;
                         drn.y_1 = drn.y_2 = drn.y;
                         spawned = true;
-                        current_state = STATE_SENDING_OUTPUT;
+                        // Invio immediato al primo spawn
                         send_position(msg, drn.x, drn.y, fd_out);
                     }
                     break;
                 }
                 case MSG_TYPE_INPUT: {
-                    // Force Control Logic (Keys to Force Vector)
                     char ch = msg.data[0];
-                    //logMessage(LOG_PATH, "[DRONE] Input received: '%c'", ch);
-                    if(ch == 'q') {
-                        goto quit;
-                        break;
-                    }
-
-                    bool isValid = true;
+                    if(ch == 'q') goto quit;
+                    // Apply Forces
                     switch(ch){
                         case 'e':  drn.Fy -= 1.0f; break;
                         case 'r':  drn.Fx += 1.0f; drn.Fy -= 1.0f; break;
@@ -187,99 +184,69 @@ int main(int argc, char *argv[]) {
                         case 's':  drn.Fx -= 1.0f; break;
                         case 'w':  drn.Fx -= 1.0f; drn.Fy -= 1.0f; break;
                         case 'd': // Brake
-                            drn.Fx *= 0.5f;
-                            drn.Fy *= 0.5f;
+                            drn.Fx *= 0.5f; drn.Fy *= 0.5f;
                             if(fabs(drn.Fx) <= 0.5f) drn.Fx = 0.0f;
                             if(fabs(drn.Fy) <= 0.5f) drn.Fy = 0.0f;
                             break;
-                        default: isValid = false; break;
-                    }
-                    if(isValid){
-                        //logMessage(LOG_PATH, "[DRONE] Forces updated: Fx=%f Fy=%f", drn.Fx, drn.Fy);
                     }
                     break;
                 }
-
                 case MSG_TYPE_OBSTACLES: { 
-                    // Deserialize Obstacles
-                    //logMessage(LOG_PATH, "[DRONE] Obstacles metadata received: %s", msg.data); 
-                    int count; 
-                    sscanf(msg.data, "%d", &count); 
-                    free(obstacles); 
-                    obstacles = count ? malloc(sizeof(Point)*count) : NULL; 
-                    num_obstacles = 0; 
-                    if (obstacles) { 
-                        if (read(fd_in, obstacles, sizeof(Point)*count) > 0) { 
-                            num_obstacles = count; 
-                        } 
-                    } 
+                    int count; sscanf(msg.data, "%d", &count); 
+                    free(obstacles); obstacles = count ? malloc(sizeof(Point)*count) : NULL; 
+                    if (obstacles) read(fd_in, obstacles, sizeof(Point)*count);
+                    num_obstacles = count; 
                     break; 
                 }
-
                 case MSG_TYPE_TARGETS: { 
-                    // Deserialize Targets
-                    //logMessage(LOG_PATH, "[DRONE] Targets metadata received: %s", msg.data); 
-                    int count; 
-                    sscanf(msg.data, "%d", &count); 
+                    int count; sscanf(msg.data, "%d", &count); 
                     free(targets); targets = count ? malloc(sizeof(Point)*count) : NULL; 
-                    num_targets = 0; 
-                    if (targets) { 
-                        if (read(fd_in, targets, sizeof(Point)*count) > 0) { 
-                            num_targets = count; 
-                        } 
-                    } 
+                    if (targets) read(fd_in, targets, sizeof(Point)*count);
+                    num_targets = count; 
                     break; 
                 }
-                default: break;
             }
-        }
+        } // End Input While
 
-        /* --- SUB-SECTION: PHYSICS CALCULATIONS --- */
+        // ====================================================================
+        // STEP 2: PHYSICS CALCULATION (Run every cycle)
+        // ====================================================================
         current_state = STATE_CALCULATING_PHYSICS;
         float repFx=0.0f, repFy=0.0f, repWallFx=0.0f, repWallFy=0.0f, abtrFx = 0.0f, abtrFy = 0.0f;        
         
-        // A. Attractive Forces (Targets)
+        // A. Attractive (Targets)
         for(int i=0; i<num_targets; i++){
             float dx = drn.x - ((float)targets[i].x + 0.5);
             float dy = drn.y - ((float)targets[i].y + 0.5);
             float d = sqrt(dx*dx + dy*dy) - 0.5f;
-
-            //logMessage(LOG_PATH, "distanza da target %d d = %f", i, d);
             if(d < rho && d > 0.1f){
                 float F = eta * (1.0f/d - 1.0f/rho) / (d*d);
-                abtrFx += F * dx/d;
-                abtrFy += F * dy/d;
+                abtrFx += F * dx/d; abtrFy += F * dy/d;
             }
         }
-        if(fabs(abtrFx) < EPSILON) abtrFx = 0.0f;
-        if(fabs(abtrFy) < EPSILON) abtrFy = 0.0f; 
 
-        // B. Repulsive Forces (Obstacles)
+        // B. Repulsive (Obstacles)
         for(int i=0; i<num_obstacles; i++){
             float dx = drn.x - ((float)obstacles[i].x + 0.5);
             float dy = drn.y - ((float)obstacles[i].y + 0.5);
             float d = sqrt(dx*dx + dy*dy) - 0.5f;
             if(d < rho && d > 0.1f){
                 float F = eta * (1.0f/d - 1.0f/rho) / (d*d);
-                repFx += F * dx/d;
-                repFy += F * dy/d;
+                repFx += F * dx/d; repFy += F * dy/d;
             }
         }
-        if(fabs(repFx) < EPSILON) repFx = 0.0f;
-        if(fabs(repFy) < EPSILON) repFy = 0.0f;
 
-        // C. Repulsive Forces (Walls)
+        // C. Walls
         float dR = (win_width-1) - drn.x;
         float dL = drn.x - 1;
         float dT = drn.y - 1;
         float dB = (win_height-1) - drn.y;
-
         if(dR < rho) repWallFx -= eta * (1.0f/dR - 1.0f/rho)/(dR*dR);
         if(dL < rho) repWallFx += eta * (1.0f/dL - 1.0f/rho)/(dL*dL);
         if(dT < rho) repWallFy += eta * (1.0f/dT - 1.0f/rho)/(dT*dT);
         if(dB < rho) repWallFy -= eta * (1.0f/dB - 1.0f/rho)/(dB*dB);
 
-        // D. Force Summation and Clamping
+        // D. Sum & Clamp
         float totFx = drn.Fx + repFx + repWallFx - abtrFx;
         float totFy = drn.Fy + repFy + repWallFy - abtrFy;
         float forceMag = sqrt(totFx*totFx + totFy*totFy);
@@ -288,32 +255,39 @@ int main(int argc, char *argv[]) {
             totFy = totFy/forceMag*MAX_FORCE;
         }
 
-        // E. Euler Integration (Position Update)
+        // E. Euler Integration
         drn.x_2 = drn.x_1; drn.x_1 = drn.x;
         drn.y_2 = drn.y_1; drn.y_1 = drn.y;
         drn.x = (DT*DT*totFx - drn.x_2 + (2+K*DT)*drn.x_1)/(1+K*DT);
         drn.y = (DT*DT*totFy - drn.y_2 + (2+K*DT)*drn.y_1)/(1+K*DT);
 
-        // F. Hard Collision Check (Obstacles)
+        // F. Collision
         for(int i=0; i<num_obstacles; i++){
             float dx = drn.x - (float)obstacles[i].x;
             float dy = drn.y - (float)obstacles[i].y;
-            float d = sqrt(dx*dx + dy*dy);
-            if(d <= 0.1f){
-                drn.x = drn.x_1;
-                drn.y = drn.y_1;
+            if(sqrt(dx*dx + dy*dy) <= 0.1f){
+                drn.x = drn.x_1; drn.y = drn.y_1;
                 break;
             }
         }
 
-        // 3. SEND OUTPUT (Position and Forces)
-        current_state = STATE_SENDING_OUTPUT;
-        send_position(msg, drn.x, drn.y, fd_out);
-        send_forces(msg, fd_out, drn.Fx, drn.Fy, repFx, repFy, repWallFx, repWallFy, abtrFx, abtrFy);
+        // ====================================================================
+        // STEP 3: OUTPUT THROTTLING (Send only at ~30 FPS)
+        // ====================================================================
+        struct timespec now;
+        clock_gettime(CLOCK_MONOTONIC, &now);
+        
+        if (get_time_diff_ns(last_render_time, now) >= RENDER_DT_NS) {
+            current_state = STATE_SENDING_OUTPUT;
+            send_position(msg, drn.x, drn.y, fd_out);
+            send_forces(msg, fd_out, drn.Fx, drn.Fy, repFx, repFy, repWallFx, repWallFy, abtrFx, abtrFy);
+            last_render_time = now;
+        }
 
-        current_state = STATE_IDLE;
+        // Sleep to maintain ~1000Hz Physics Loop
         usleep(1000); 
     }
+
 quit:
     free(obstacles);
     free(targets);

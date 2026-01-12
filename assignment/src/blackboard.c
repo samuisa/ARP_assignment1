@@ -1,3 +1,4 @@
+
 /* ======================================================================================
  * SECTION 1: INCLUDES AND GLOBALS
  * Standard headers and global state variables for the game world.
@@ -38,6 +39,22 @@ typedef enum {
     STATE_BROADCASTING          // Sending data via Pipes
 } BBProcessState;
 
+typedef enum {
+    // Stati Server
+    SV_SEND_DRONE,      // 0: Invia coords drone
+    SV_WAIT_DOK,        // 1: Attende ACK "dok" (polling)
+    SV_SEND_REQ_OBST,   // 2: Invia richiesta "obst"
+    SV_WAIT_OBST_DATA,  // 3: Attende dati ostacolo (polling)
+    
+    // Stati Client
+    CL_WAIT_COMMAND,    // 0: Attende comando iniziale (polling)
+    CL_WAIT_DRONE_DATA, // 1: Attende dati drone server (polling)
+    CL_SEND_OBST_DATA,  // 2: Invia propri dati
+    CL_WAIT_POK         // 3: Attende ACK "pok" (polling)
+} NetState;
+
+static NetState net_state; // Stato corrente
+
 typedef struct {
     volatile BBProcessState current_state;
     time_t last_state_change;
@@ -54,7 +71,10 @@ void set_state(BBProcessState new_state) {
 
 // Globals
 static int current_mode = MODE_STANDALONE;
-static int sock_fd = -1; // Network socket
+static int net_fd = -1; // Descrittore socket (sia per client che server dopo accept)
+// --- MODIFICA: VARIABILI DISTINTE PER SERVER E CLIENT ---
+static int server_sock_fd = -1; // Socket usato se siamo in modalità SERVER
+static int client_sock_fd = -1; // Socket usato se siamo in modalità CLIENT
 // ----------------------------------------
 
 // Timers for periodic events (Obstacle movement)
@@ -93,73 +113,149 @@ static const char *state_to_str(BBProcessState s) {
 #define BB_LOG_STATE(msg) \
     logMessage(LOG_PATH, "[BB][%s] %s", state_to_str(bb_monitor.current_state), msg)
 
+    // --- PROTOTIPI DI FUNZIONE ---
+void reposition_and_redraw(WINDOW **win_ptr, int req_h, int req_w);
 
 /* ======================================================================================
  * SECTION: COORDINATE CONVERSION & PROTOCOL
  * ====================================================================================== */
 
-// Convert Ncurses (0,0 Top-Left) -> Virtual (0,0 Bottom-Left)
-void coords_local_to_virt(float lx, float ly, int win_h, float *vx, float *vy) {
-    *vx = lx;
-    *vy = (float)win_h - ly;
+// Imposta QUALSIASI file descriptor (socket o pipe) in non-blocking
+void set_non_blocking(int fd) {
+    int flags = fcntl(fd, F_GETFL, 0);
+    if (flags != -1) {
+        fcntl(fd, F_SETFL, flags | O_NONBLOCK);
+    }
 }
 
-// Convert Virtual (0,0 Bottom-Left) -> Ncurses (0,0 Top-Left)
-void coords_virt_to_local(float vx, float vy, int win_h, float *lx, float *ly) {
-    *lx = vx;
-    *ly = (float)win_h - vy;
+void send_msg(int fd, const char *fmt, ...) {
+    char buffer[256];
+    va_list args;
+    va_start(args, fmt);
+    vsnprintf(buffer, sizeof(buffer), fmt, args);
+    va_end(args);
+
+    int len = strlen(buffer);
+    if (len > 0 && buffer[len-1] != '\n') {
+        strcat(buffer, "\n");
+    }
+    // In non-blocking write potrebbe fallire se buffer pieno, 
+    // ma per messaggi piccoli assumiamo successo per semplicità.
+    write(fd, buffer, strlen(buffer));
 }
 
+// *** FUNZIONE CHIAVE ***
+// Legge dal socket NON BLOCCANTE accumulando dati finché non trova '\n'
+// Ritorna: 1 se ha una riga completa, 0 se deve riprovare dopo, -1 errore
+int recv_line_nonblock(int fd, char *out, int out_sz) {
+    static char rx_buf[BUFSZ];
+    static int rx_len = 0;
+
+    // 1. Prova a leggere
+    int n = read(fd, rx_buf + rx_len, BUFSZ - rx_len - 1);
+    
+    if (n > 0) {
+        rx_len += n;
+        rx_buf[rx_len] = '\0';
+    } 
+    else if (n < 0) {
+        // Se errno è EAGAIN o EWOULDBLOCK, significa "non c'è nulla ora, riprova dopo"
+        if (errno != EAGAIN && errno != EWOULDBLOCK) return -1; // Errore vero
+    } 
+    else if (n == 0) {
+        return -1; // Socket chiuso
+    }
+
+    // 2. Controlla se abbiamo un newline nel buffer accumulato
+    char *newline = strchr(rx_buf, '\n');
+    if (newline) {
+        *newline = '\0'; // Termina stringa
+        strncpy(out, rx_buf, out_sz - 1); // Copia riga in out
+        
+        // 3. Shift del buffer (sposta i dati avanzati all'inizio)
+        int line_len = (newline - rx_buf) + 1;
+        int remaining = rx_len - line_len;
+        if (remaining > 0) memmove(rx_buf, newline + 1, remaining);
+        rx_len = remaining;
+        rx_buf[rx_len] = '\0';
+
+        return 1; // ABBIAMO UNA RIGA!
+    }
+
+    return 0; // NON ABBIAMO ANCORA UNA RIGA INTERA
+}
+
+// Versione bloccante solo per handshake iniziale
+int recv_line_block(int fd, char *buffer, int size) {
+    int i = 0; char c; memset(buffer, 0, size);
+    while (i < size - 1) {
+        if (read(fd, &c, 1) <= 0) return 0;
+        if (c == '\n') break;
+        buffer[i++] = c;
+    }
+    buffer[i] = '\0';
+    return 1;
+}
+
+void local_to_virt(float lx, float ly, int h, float *vx, float *vy) { *vx = lx; *vy = (float)h - ly; }
+void virt_to_local(float vx, float vy, int h, float *lx, float *ly) { *lx = vx; *ly = (float)h - vy; }
 /* ======================================================================================
- * SECTION: NETWORK SETUP
+ * SECTION 3: CONNECTION & HANDSHAKE
  * ====================================================================================== */
-int init_server() {
-    int s_fd = socket(AF_INET, SOCK_STREAM, 0);
-    struct sockaddr_in addr;
-    int opt = 1;
-    setsockopt(s_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
-    
-    addr.sin_family = AF_INET;
-    addr.sin_addr.s_addr = INADDR_ANY;
-    addr.sin_port = htons(port_number);
 
-    bind(s_fd, (struct sockaddr*)&addr, sizeof(addr));
-    listen(s_fd, 1);
-    
-    logMessage(LOG_PATH_SC, "[SERVER] Waiting for client...");
-    mvprintw(LINES/2, COLS/2 - 10, "WAITING FOR CLIENT..."); refresh();
-    
-    int c_fd = accept(s_fd, NULL, NULL);
-    logMessage(LOG_PATH_SC, "[SERVER] Client connected.");
-    return c_fd;
+int init_server() {
+    int s = socket(AF_INET, SOCK_STREAM, 0);
+    struct sockaddr_in a = {0}; int opt=1;
+    setsockopt(s, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
+    a.sin_family=AF_INET; a.sin_addr.s_addr=INADDR_ANY; a.sin_port=htons(port_number);
+    bind(s,(struct sockaddr*)&a,sizeof(a)); listen(s,1);
+    mvprintw(LINES/2, COLS/2-10, "WAITING CLIENT..."); refresh();
+    return accept(s,NULL,NULL);
 }
 
 int init_client() {
-    int fd = socket(AF_INET, SOCK_STREAM, 0);
-    struct sockaddr_in addr;
-
-    addr.sin_family = AF_INET;
-    addr.sin_port = htons(port_number);
-
-    // Usa IP inserito dall'utente
-    if (inet_pton(AF_INET, server_address, &addr.sin_addr) <= 0) {
-        logMessage(LOG_PATH_SC, "[CLIENT] Invalid IP address: %s", server_address);
-        return -1;
+    int s = socket(AF_INET, SOCK_STREAM, 0);
+    struct sockaddr_in a = {0};
+    a.sin_family=AF_INET; a.sin_port=htons(port_number);
+    inet_pton(AF_INET, server_address, &a.sin_addr);
+    while(connect(s,(struct sockaddr*)&a,sizeof(a))<0) {
+        mvprintw(LINES/2, COLS/2-15, "CONNECTING..."); refresh(); sleep(1);
     }
-
-    logMessage(LOG_PATH_SC, "[CLIENT] Connecting to %s:%d ...",
-               server_address, port_number);
-
-    while (connect(fd, (struct sockaddr*)&addr, sizeof(addr)) < 0) {
-        mvprintw(LINES/2, COLS/2 - 15, "CONNECTING TO %s...", server_address);
-        refresh();
-        sleep(1);
-    }
-
-    logMessage(LOG_PATH_SC, "[CLIENT] Connected.");
-    return fd;
+    return s;
 }
 
+// NOTA: win è WINDOW** (doppio puntatore)
+void protocol_handshake(int mode, int fd, int *w, int *h, WINDOW** win) {
+    char buf[256];
+    
+    if (mode == MODE_SERVER) {
+        send_msg(fd, "ok");
+        if (!recv_line_block(fd, buf, 256) || strcmp(buf, "ook") != 0) exit(1);
+        
+        // Il server invia le PROPRIE dimensioni correnti
+        send_msg(fd, "size %d %d", *w, *h);
+        
+        if (!recv_line_block(fd, buf, 256)) exit(1);
+        int rw, rh; 
+        sscanf(buf, "sok %d %d", &rw, &rh);
+    
+    } else { // CLIENT
+        if (!recv_line_block(fd, buf, 256) || strcmp(buf, "ok") != 0) exit(1);
+        
+        send_msg(fd, "ook");
+        if (!recv_line_block(fd, buf, 256)) exit(1);
+        
+        // 1. Riceve dimensioni dal Server
+        sscanf(buf, "size %d %d", w, h);
+        
+        // 2. Conferma ricezione
+        send_msg(fd, "sok %d %d", *w, *h);
+        
+        // 3. APPLICA LE DIMENSIONI IMMEDIATAMENTE
+        // Passiamo 'win' (che è già WINDOW**) e le dimensioni ricevute w e h
+        reposition_and_redraw(win, *h, *w);
+    }
+}
 
 /* ======================================================================================
  * SECTION 2: WATCHDOG INTEGRATION
@@ -281,17 +377,6 @@ void draw_drone(WINDOW *win, float x, float y) {
     wattron(win, COLOR_PAIR(1));
     mvwprintw(win, iy, ix, "+");
     wattroff(win, COLOR_PAIR(1));
-
-    // Draw Remote Entity (If Active)
-    if (remote_x >= 0 && remote_y >= 0) {
-        wattron(win, COLOR_PAIR(2)); // Red
-        mvwprintw(win, (int)remote_y, (int)remote_x, current_mode == MODE_SERVER ? "C" : "S");
-        wattroff(win, COLOR_PAIR(2));
-    }
-
-    wnoutrefresh(win);
-    wnoutrefresh(status_win);
-    doupdate();
 }
 
 // Master refresh function
@@ -300,9 +385,9 @@ void redraw_scene(WINDOW *win) {
     draw_background(win);
     if(current_mode == MODE_STANDALONE){
 
-        draw_obstacles(win);
         draw_targets(win);
     }
+    draw_obstacles(win);
     draw_drone(win, current_x, current_y);
 
     wnoutrefresh(win);
@@ -398,59 +483,50 @@ void update_dynamic(float x, float y, float drn_Fx, float drn_Fy, float obst_Fx,
     }
 }
 
-void reposition_and_redraw(WINDOW **win_ptr) {
-    if (is_term_resized(LINES, COLS)) {
-        resize_term(0, 0);
+// Aggiunti argomenti req_h, req_w
+void reposition_and_redraw(WINDOW **win_ptr, int req_h, int req_w) {
+    
+    // Se non sono richieste dimensioni specifiche (0), usa quelle del terminale attuale
+    if (req_h == 0 || req_w == 0) {
+        if (is_term_resized(LINES, COLS)) {
+            resize_term(0, 0);
+        }
+        req_w = COLS;
+        req_h = LINES - 1;
+    } else {
+        // Se il server ci ha dato dimensioni, forziamo la struttura interna di ncurses
+        // +1 perché req_h è l'area di gioco, ma ci serve 1 riga per la status bar
+        resize_term(req_h + 1, req_w);
     }
-    int new_width  = COLS;
-    int new_height = LINES - 1;
+
     int startx = 0;
     int starty = 1;
 
     if (*win_ptr != NULL) {
-        if (wresize(*win_ptr, new_height, new_width) == ERR || mvwin(*win_ptr, starty, startx) == ERR) {
+        // Proviamo a ridimensionare
+        if (wresize(*win_ptr, req_h, req_w) == ERR || mvwin(*win_ptr, starty, startx) == ERR) {
             destroy_window(*win_ptr);
-            *win_ptr = create_window(new_height, new_width, starty, startx);
-            wresize(status_win, 1, new_width);
+            *win_ptr = create_window(req_h, req_w, starty, startx);
+            
+            // Ridimensiona anche la status bar
+            wresize(status_win, 1, req_w);
             mvwin(status_win, 0, 0);
         }
     } else {
-        *win_ptr = create_window(new_height, new_width, starty, startx);
-        status_win = newwin(1, new_width, 0, 0);
+        *win_ptr = create_window(req_h, req_w, starty, startx);
+        status_win = newwin(1, req_w, 0, 0);
     }
 
     werase(status_win);
     box(*win_ptr, 0, 0);
     redraw_scene(*win_ptr);
-    logMessage(LOG_PATH, "[BB] Resized: %dx%d", new_width, new_height);
+    logMessage(LOG_PATH, "[BB] Window Resized to: %dx%d", req_w, req_h);
 }
 
 /* ======================================================================================
  * SECTION 7: IPC (BROADCASTING)
  * Helper functions to send window dimensions to other processes.
  * ====================================================================================== */
-
- ssize_t send_msg(int fd, const char *msg) {
-    ssize_t n = write(fd, msg, strlen(msg));
-    if (n < 0) {
-        perror("write");
-        exit(EXIT_FAILURE);
-    }
-    logMessage(LOG_PATH, "[BB] Sent: '%s'", msg);
-    return n;
-}
-
-ssize_t recv_msg(int fd, char *buf, size_t bufsz) {
-    bzero(buf, bufsz);
-    ssize_t n = read(fd, buf, bufsz - 1);
-    if (n < 0) {
-        perror("read");
-        exit(EXIT_FAILURE);
-    }
-    buf[n] = '\0';
-    logMessage(LOG_PATH, "[BB] Received: '%s'", buf);
-    return n;
-}
 
 void send_window_size(WINDOW *win, int fd_drone, int fd_obst, int fd_targ) {
     set_state(STATE_BROADCASTING); // Update State
@@ -479,68 +555,6 @@ void send_resize(WINDOW *win, int fd_drone) {
     write(fd_drone, &msg, sizeof(msg));
 }
 
-// --- PROTOCOL HELPER FUNCTIONS ---
-
-void send_str(int fd, const char *str) {
-    // Inviamo buffer a dimensione fissa per semplicità e robustezza nel protocollo "string messages"
-    char buf[64]; 
-    memset(buf, 0, sizeof(buf));
-    strncpy(buf, str, sizeof(buf)-1);
-    if (write(fd, buf, sizeof(buf)) < 0) perror("Net write error");
-}
-
-int recv_str(int fd, char *buf) {
-    memset(buf, 0, 64);
-    // Leggiamo la dimensione fissa concordata
-    if (read(fd, buf, 64) <= 0) return 0; // Connection closed or error
-    return 1;
-}
-
-// Implementazione Handshake Iniziale (Client e Server)
-void run_network_handshake(int mode, int fd, int *w, int *h) {
-    char buf[64];
-    char dim_str[64];
-
-    if (mode == MODE_SERVER) {
-        // --- SERVER SIDE ---
-        // 1. Send OK, Recv OOK
-        send_str(fd, "ok");
-        recv_str(fd, buf); 
-        if (strcmp(buf, "ook") != 0) {
-            logMessage(LOG_PATH_SC, "[NET] Handshake Error: expected ook");
-        }else{
-            logMessage(LOG_PATH_SC, "[NET] Handshake: ook received");
-        }
-        // 2. Send Size, Recv SOK
-        snprintf(dim_str, sizeof(dim_str), "%d %d", *w, *h);
-        send_str(fd, dim_str);
-        recv_str(fd, buf);
-        // Expect "sok <size>"
-        // (Opzionale: parsing di buf per verificare che contenga "sok")
-        
-    } else {
-        // --- CLIENT SIDE ---
-        // 1. Recv OK, Send OOK
-        recv_str(fd, buf);
-        if (strcmp(buf, "ok") != 0){ 
-            logMessage(LOG_PATH_SC, "[NET] Handshake Error: expected ok");
-        }else{
-            logMessage(LOG_PATH_SC, "[NET] Handshake: ok received");
-        }
-        send_str(fd, "ook");
-
-        // 2. Recv Size, Send SOK
-        recv_str(fd, dim_str);
-        sscanf(dim_str, "%d %d", w, h);
-
-        logMessage(LOG_PATH_SC,"SIZE RECEIVED: WIDTH = %d, HEIGHT = %d", *w, *h);
-        
-        char reply[128];
-        snprintf(reply, sizeof(reply), "sok %s", dim_str);
-        send_str(fd, reply);
-    }
-}
-
 /* ======================================================================================
  * SECTION 8: MAIN EXECUTION
  * Setup, Watchdog Synchronization, I/O Multiplexing Loop.
@@ -567,6 +581,10 @@ int main(int argc, char *argv[]) {
         server_address[sizeof(server_address) - 1] = '\0'; // Ensure null-termination
     }
     port_number = atoi(argv[11]);
+
+
+    signal(SIGPIPE, SIG_IGN);
+
 
     if (current_mode != MODE_STANDALONE) {
         num_obstacles = 0;
@@ -622,29 +640,29 @@ int main(int argc, char *argv[]) {
     WINDOW *win = NULL;
     int win_h = LINES - 1, win_w = COLS;
     
-    // Inizializzazione Socket
-    if (current_mode == MODE_SERVER) {
-        sock_fd = init_server(); // Assumiamo ritorni un socket valido o esca
-    } else if (current_mode == MODE_CLIENT) {
-        sock_fd = init_client(); // Assumiamo ritorni un socket valido o esca
-    }
-
-    if (sock_fd >= 0) {
-        // Esegue il protocollo: ok/ook -> size/sok
-        run_network_handshake(current_mode, sock_fd, &win_w, &win_h);
+    // Inizializzazione Socket differenziata
+    if (current_mode != MODE_STANDALONE) {
+        net_fd = (current_mode == MODE_SERVER) ? init_server() : init_client();
+        if (net_fd < 0) { endwin(); return 1; }
         
-        if (current_mode == MODE_CLIENT) {
-            resizeterm(win_h + 1, win_w);
-        }
+        protocol_handshake(current_mode, net_fd, &win_w, &win_h, &win);
+        if (current_mode == MODE_CLIENT) resizeterm(win_h + 1, win_w);
+        
+        // *** FONDAMENTALE: SOCKET NON-BLOCKING DOPO HANDSHAKE ***
+        set_non_blocking(net_fd);
+        net_state = (current_mode == MODE_SERVER) ? SV_SEND_DRONE : CL_WAIT_COMMAND;
     }
 
-    
+    // *** FONDAMENTALE: PIPE NON-BLOCKING ***
+    // Altrimenti read(fd_input) bloccherebbe il loop se non si preme nulla
+    set_non_blocking(fd_input_read);
+    set_non_blocking(fd_drone_read);
 
     // E. Initial Window Creation & IPC
     status_win = newwin(1, COLS, 0, 0);
     win = create_window(LINES - 1, COLS, 1, 0);
     
-    reposition_and_redraw(&win);
+    reposition_and_redraw(&win, 0, 0);
     send_window_size(win, fd_drone_write, fd_obst_write, fd_targ_write);
 
 
@@ -659,6 +677,12 @@ int main(int argc, char *argv[]) {
     fd_set readfds;
     struct timeval tv;
     Message msg;
+
+    obstacles = malloc(sizeof(Point)); 
+    num_obstacles = 0;
+
+    char net_buf[256];
+    float vx, vy, rx, ry; // Virtual coords
     
     // --- MAIN LOOP ---
     while (1) {
@@ -670,7 +694,7 @@ int main(int argc, char *argv[]) {
             set_state(STATE_PROCESSING_INPUT);
             if (ch == 'q') break;
             if (ch == KEY_RESIZE) {
-                reposition_and_redraw(&win);
+                reposition_and_redraw(&win, 0, 0);
                 send_resize(win, fd_drone_write);
             }
         }
@@ -678,7 +702,7 @@ int main(int argc, char *argv[]) {
         // 2. Periodic Obstacle Logic
         struct timespec now;
         clock_gettime(CLOCK_MONOTONIC, &now);
-        if (num_obstacles > 0 && now.tv_sec - last_obst_change.tv_sec >= OBSTACLE_PERIOD_SEC) {
+        if (current_mode == MODE_STANDALONE && num_obstacles > 0 && now.tv_sec - last_obst_change.tv_sec >= OBSTACLE_PERIOD_SEC) {
             set_state(STATE_UPDATING_MAP); // Update state
             last_obst_change = now;
             
@@ -709,12 +733,15 @@ int main(int argc, char *argv[]) {
         
         int max_fd = fd_input_read;
         if (fd_drone_read > max_fd) max_fd = fd_drone_read;
-        if (fd_obst_read > max_fd) max_fd = fd_obst_read;
-        if (fd_targ_read > max_fd) max_fd = fd_targ_read;
+        if(current_mode == MODE_STANDALONE){
+            if (fd_obst_read > max_fd) max_fd = fd_obst_read;
+            if (fd_targ_read > max_fd) max_fd = fd_targ_read;
+        }
+        
         max_fd += 1;
 
         tv.tv_sec  = 0;
-        tv.tv_usec = 50000; // 50ms Timeout
+        tv.tv_usec = 30000; // 50ms Timeout
 
         int ret = select(max_fd, &readfds, NULL, NULL, &tv);
         if (ret < 0) {
@@ -733,6 +760,7 @@ int main(int argc, char *argv[]) {
                     write(fd_wd_write, buf, sizeof(buf));
                     break;
                 }
+                logMessage(LOG_PATH_SC, "[BB] Input received: %c", buf[0]);
                 // Forward key to Drone
                 msg.type = MSG_TYPE_INPUT;
                 snprintf(msg.data, sizeof(msg.data), "%s", buf);
@@ -756,7 +784,10 @@ int main(int argc, char *argv[]) {
                     int dx = (int)current_x;
                     int dy = (int)current_y;
 
-                    for (int i = 0; i < num_targets; i++) {
+                    //logMessage(LOG_PATH_SC, "[BB] Drone position: x = %f, y = %f", current_x, current_y);
+
+                    if(current_mode == MODE_STANDALONE){
+                        for (int i = 0; i < num_targets; i++) {
                         if (dx == (int)targets[i].x && dy == (int)targets[i].y) {
                             // Remove target
                             if(i == 0){
@@ -805,6 +836,8 @@ int main(int argc, char *argv[]) {
                             break; 
                         }
                     }
+                    }
+                    
                     break;
                 }
 
@@ -878,158 +911,110 @@ int main(int argc, char *argv[]) {
             }
         }
 
-        // ============================================================
-        // SERVER LOGIC (ACTIVE): Invia dati periodicamente
-        // ============================================================
-        if (current_mode == MODE_SERVER && sock_fd >= 0) {
+        if (current_mode != MODE_STANDALONE && net_fd >= 0) {
+            
+            // --- LOGICA SERVER ---
+            if (current_mode == MODE_SERVER) {
+                switch (net_state) {
+                    case SV_SEND_DRONE:
+                        // Inviare è veloce, lo facciamo subito
+                        local_to_virt(current_x, current_y, win_h, &vx, &vy);
+                        send_msg(net_fd, "drone");
+                        send_msg(net_fd, "%.2f %.2f", vx, vy);
+                        net_state = SV_WAIT_DOK;
+                        break;
 
-            char cmd[64];
-            char buf[64];
+                    case SV_WAIT_DOK:
+                        // Controlliamo se è arrivata risposta
+                        if (recv_line_nonblock(net_fd, net_buf, sizeof(net_buf)) == 1) {
+                            if (strncmp(net_buf, "dok", 3) == 0) {
+                                net_state = SV_SEND_REQ_OBST;
+                            } else if (strncmp(net_buf, "q", 1) == 0) goto exit_loop;
+                        }
+                        // Se recv ritorna 0, non facciamo nulla e riproviamo al prossimo frame
+                        break;
 
-            /* ================================
-            * 1. SEND DRONE (server → client)
-            * ================================ */
-            send_str(sock_fd, "drone");
+                    case SV_SEND_REQ_OBST:
+                        send_msg(net_fd, "obst");
+                        net_state = SV_WAIT_OBST_DATA;
+                        break;
 
-            float vx, vy;
-            coords_local_to_virt(current_x, current_y, win_h, &vx, &vy);
+                    case SV_WAIT_OBST_DATA:
+                        if (recv_line_nonblock(net_fd, net_buf, sizeof(net_buf)) == 1) {
+                            if (sscanf(net_buf, "%f %f", &rx, &ry) == 2) {
+                                virt_to_local(rx, ry, win_h, &remote_x, &remote_y);
+                                num_obstacles = 1; obstacles[0].x=remote_x; obstacles[0].y=remote_y;
+                                
+                                // Aggiorna fisica
+                                msg.type = MSG_TYPE_OBSTACLES; sprintf(msg.data, "1");
+                                write(fd_drone_write, &msg, sizeof(msg));
+                                write(fd_drone_write, obstacles, sizeof(Point));
+                                redraw_scene(win);
 
-            snprintf(buf, sizeof(buf), "%.2f %.2f", vx, vy);
-            send_str(sock_fd, buf);
+                                send_msg(net_fd, "pok %.2f %.2f", rx, ry);
+                                net_state = SV_SEND_DRONE; // Loop ricomincia
+                            }
+                        }
+                        break;
+                    default: break;
+                }
+            } 
+            
+            // --- LOGICA CLIENT ---
+            else if (current_mode == MODE_CLIENT) {
+                switch (net_state) {
+                    case CL_WAIT_COMMAND:
+                        if (recv_line_nonblock(net_fd, net_buf, sizeof(net_buf)) == 1) {
+                            if (strcmp(net_buf, "drone") == 0) net_state = CL_WAIT_DRONE_DATA;
+                            else if (strcmp(net_buf, "obst") == 0) net_state = CL_SEND_OBST_DATA;
+                            else if (strcmp(net_buf, "q") == 0) { send_msg(net_fd, "qok"); goto exit_loop; }
+                        }
+                        break;
 
-            if (!recv_str(sock_fd, cmd)) break;     // expect "dok"
+                    case CL_WAIT_DRONE_DATA:
+                        if (recv_line_nonblock(net_fd, net_buf, sizeof(net_buf)) == 1) {
+                            if (sscanf(net_buf, "%f %f", &rx, &ry) == 2) {
+                                virt_to_local(rx, ry, win_h, &remote_x, &remote_y);
+                                num_obstacles = 1; obstacles[0].x=remote_x; obstacles[0].y=remote_y;
+                                
+                                msg.type = MSG_TYPE_OBSTACLES; sprintf(msg.data, "1");
+                                write(fd_drone_write, &msg, sizeof(msg));
+                                write(fd_drone_write, obstacles, sizeof(Point));
+                                redraw_scene(win);
 
-            /* ================================
-            * 2. RECV OBST (client → server)
-            * ================================ */
-            send_str(sock_fd, "obst");
+                                send_msg(net_fd, "dok %.2f %.2f", rx, ry);
+                                net_state = CL_WAIT_COMMAND;
+                            }
+                        }
+                        break;
 
-            if (!recv_str(sock_fd, buf)) break;     // expect x y
+                    case CL_SEND_OBST_DATA:
+                        local_to_virt(current_x, current_y, win_h, &vx, &vy);
+                        send_msg(net_fd, "%.2f %.2f", vx, vy);
+                        net_state = CL_WAIT_POK;
+                        break;
 
-            float ovx, ovy;
-            sscanf(buf, "%f %f", &ovx, &ovy);
-
-            coords_virt_to_local(ovx, ovy, win_h, &remote_x, &remote_y);
-
-            send_str(sock_fd, "pok");
-
-            /* ================================
-            * remote_x / remote_y
-            * = OSTACOLO per la fisica server
-            * ================================ */
-        }
-
-
-        // ============================================================
-        // CLIENT LOGIC (REACTIVE): Risponde ai comandi del Server
-        // ============================================================
-        if (current_mode == MODE_CLIENT && sock_fd >= 0 && FD_ISSET(sock_fd, &readfds)) {
-
-            char cmd[64];
-            char buf[64];
-
-            if (!recv_str(sock_fd, cmd)) {
-                close(sock_fd);
-                sock_fd = -1;
-                break;
-            }
-
-            /* ================================
-            * DRONE (server → client)
-            * ================================ */
-            if (strcmp(cmd, "drone") == 0) {
-
-                recv_str(sock_fd, buf);
-
-                float vx, vy;
-                sscanf(buf, "%f %f", &vx, &vy);
-
-                coords_virt_to_local(vx, vy, win_h, &remote_x, &remote_y);
-
-                send_str(sock_fd, "dok");
-                redraw_scene(win);
-            }
-
-            /* ================================
-            * OBST (client → server)
-            * ================================ */
-            else if (strcmp(cmd, "obst") == 0) {
-
-                float vx, vy;
-                coords_local_to_virt(current_x, current_y, win_h, &vx, &vy);
-
-                snprintf(buf, sizeof(buf), "%.2f %.2f", vx, vy);
-                send_str(sock_fd, buf);
-
-                recv_str(sock_fd, cmd); // expect "pok"
-            }
-
-            /* ================================
-            * QUIT
-            * ================================ */
-            else if (strcmp(cmd, "q") == 0) {
-                send_str(sock_fd, "qok");
-                break;
+                    case CL_WAIT_POK:
+                        if (recv_line_nonblock(net_fd, net_buf, sizeof(net_buf)) == 1) {
+                            net_state = CL_WAIT_COMMAND;
+                        }
+                        break;
+                    default: break;
+                }
             }
         }
-            char cmd[64];
-            char buf[64];
 
-            if (!recv_str(sock_fd, cmd)) {
-                close(sock_fd);
-                sock_fd = -1;
-                break;
-            }
-
-            /* ================================
-            * DRONE (server → client)
-            * ================================ */
-            if (strcmp(cmd, "drone") == 0) {
-
-                recv_str(sock_fd, buf);
-
-                float vx, vy;
-                sscanf(buf, "%f %f", &vx, &vy);
-
-                coords_virt_to_local(vx, vy, win_h, &remote_x, &remote_y);
-
-                send_str(sock_fd, "dok");
-                redraw_scene(win);
-            }
-
-            /* ================================
-            * OBST (client → server)
-            * ================================ */
-            else if (strcmp(cmd, "obst") == 0) {
-
-                float vx, vy;
-                coords_local_to_virt(current_x, current_y, win_h, &vx, &vy);
-
-                snprintf(buf, sizeof(buf), "%.2f %.2f", vx, vy);
-                send_str(sock_fd, buf);
-
-                recv_str(sock_fd, cmd); // expect "pok"
-            }
-
-            /* ================================
-            * QUIT
-            * ================================ */
-            else if (strcmp(cmd, "q") == 0) {
-                send_str(sock_fd, "qok");
-                break;
-            }
-        }
+        // 4. THROTTLING
+        // Senza select, questo while girerebbe milioni di volte al secondo (CPU 100%).
+        // Mettiamo un piccolo sleep per dare respiro alla CPU (es. 10ms = ~100fps)
+        usleep(10000);
 
     }
 
-    if (sock_fd >= 0) close(sock_fd);
-
-
-    /* --- SUB-SECTION: CLEANUP --- */
-    if (win) destroy_window(win);
-    if (obstacles) free(obstacles);
-    if (targets) free(targets);
-    logMessage(LOG_PATH, "[BB] Terminated Successfully");
+    exit_loop:
+    if (net_fd >= 0) close(net_fd);
+    destroy_window(win);
+    free(obstacles);
     endwin();
     return 0;
 }

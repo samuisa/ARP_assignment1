@@ -47,8 +47,8 @@ int main(void) {
     printf("======================================\n");
     printf(" SELECT MODE:\n");
     printf(" 0: MODE_STANDALONE (Local)\n");
-    printf(" 1: Server\n");
-    printf(" 2: Client\n");
+    printf(" 1: MODE_SERVER\n");
+    printf(" 2: MODE_CLIENT\n");
     printf("======================================\n");
     printf("> ");
     if (scanf("%d", &mode) != 1) mode = 0;
@@ -133,6 +133,8 @@ int main(void) {
         perror("exec input");
         exit(1);
     }
+
+    
 
         /* 4. BLACKBOARD PROCESS (Runs in Konsole) */
     pid_t pid_blackboard = fork();

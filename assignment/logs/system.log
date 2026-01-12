@@ -1,9 +1,23 @@
-[2026-01-11 20:07:20] (PID 5645) [MAIN] PROGRAM STARTED
-[2026-01-11 20:07:30] (PID 5645) [MAIN] Starting in MODE: 1
-[2026-01-11 20:07:36] (PID 5645) [MAIN] Application pipes created successfully
-[2026-01-11 20:07:36] (PID 5645) [MAIN] All processes running (input=5647 drone=5649 bb=5648 obst=-1 targ=-1)
-[2026-01-11 20:07:36] (PID 5682) [CTRL] Main started, fd_out=4
-[2026-01-11 20:07:36] (PID 5683) [BB] PID published securely
-[2026-01-11 20:08:00] (PID 5683) [BB] Resized: 99x53
-[2026-01-11 20:08:00] (PID 5683) [BB] Ready and GUI started
-[2026-01-11 20:08:00] (PID 5683) PORCODIO
+[2026-01-12 18:33:27] (PID 37626) [MAIN] PROGRAM STARTED
+[2026-01-12 18:33:29] (PID 37626) [MAIN] Starting in MODE: 0
+[2026-01-12 18:33:29] (PID 37626) [MAIN] Application pipes created successfully
+[2026-01-12 18:33:29] (PID 37626) [MAIN] Watchdog started (pid=37632)
+[2026-01-12 18:33:29] (PID 37626) [MAIN] All processes running (input=37627 drone=37629 bb=37628 obst=37630 targ=37631)
+[2026-01-12 18:33:29] (PID 37630) [OBST] Started
+[2026-01-12 18:33:29] (PID 37631) [TARG] Started with PID: 37631
+[2026-01-12 18:33:29] (PID 37631) [TARG] Waiting for Watchdog...
+[2026-01-12 18:33:29] (PID 37630) [OBST] Waiting for Watchdog...
+[2026-01-12 18:33:29] (PID 37681) [BB] Waiting for Watchdog...
+[2026-01-12 18:33:29] (PID 37631) [TARG] Watchdog found (PID 37685)
+[2026-01-12 18:33:29] (PID 37630) [OBST] Watchdog found (PID 37685)
+[2026-01-12 18:33:29] (PID 37631) [TARG] PID published securely
+[2026-01-12 18:33:29] (PID 37630) [OBST] PID published securely
+[2026-01-12 18:33:29] (PID 37681) [BB] Watchdog found (PID 37685)
+[2026-01-12 18:33:29] (PID 37681) [BB] PID published securely
+[2026-01-12 18:33:29] (PID 37681) [BB] Window Resized to: 88x29
+[2026-01-12 18:33:29] (PID 37681) [BB] Ready and GUI started
+[2026-01-12 18:33:29] (PID 37630) [OBST] Generated 12 obstacles
+[2026-01-12 18:33:29] (PID 37681) [BB] received 12 obstacles
+[2026-01-12 18:33:29] (PID 37631) [TARG] Generated 2 targets
+[2026-01-12 18:33:36] (PID 37630) [OBST] Pipe closed, exiting.
+[2026-01-12 18:33:36] (PID 37631) [TARG] Pipe closed, exiting.
