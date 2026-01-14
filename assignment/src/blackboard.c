@@ -633,15 +633,12 @@ int main(int argc, char *argv[]) {
                             // Se non esiste, allocalo
                             if (!obstacles) {
                                 obstacles = malloc(sizeof(Point));
-                            } 
-                            // Se esisteva già ma con dimensione diversa (es. stand-alone prima), 
-                            // qui stiamo forzando a 1 solo ostacolo (il drone remoto).
-                            // Per sicurezza in questo contesto semplice:
+                            }
+
                             num_obstacles = 1;
                             obstacles[0].x = (int)remote_x;
                             obstacles[0].y = (int)remote_y;
 
-                            // Invia al processo drone locale affinché eviti quello remoto
                             Message out_msg;
                             out_msg.type = MSG_TYPE_OBSTACLES;
                             snprintf(out_msg.data, sizeof(out_msg.data), "%d", num_obstacles);
