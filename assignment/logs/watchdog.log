@@ -1,0 +1,216 @@
+[2026-01-15 21:36:43] (PID 12152) [WATCHDOG] Starting... PID: 12152
+[2026-01-15 21:36:43] (PID 12152) [WATCHDOG] PID published securely
+[2026-01-15 21:36:43] (PID 12152) [WATCHDOG] Warm-up phase (4 seconds)...
+[2026-01-15 21:36:47] (PID 12152) [WATCHDOG] Warm-up complete. Monitoring started.
+[2026-01-15 21:36:47] (PID 12152) [WATCHDOG] Process INPUT [PID 12150] is responsive!
+[2026-01-15 21:36:47] (PID 12152) [WATCHDOG] Process BLACKBOARD [PID 12151] is responsive!
+[2026-01-15 21:36:47] (PID 12152) [WATCHDOG] Process OBSTACLE [PID 12111] is responsive!
+[2026-01-15 21:36:47] (PID 12152) [WATCHDOG] Process TARGET [PID 12112] is responsive!
+[2026-01-15 21:36:47] (PID 12152) [WATCHDOG] All 4 processes checked. Waiting next cycle...
+[2026-01-15 21:36:49] (PID 12152) [WATCHDOG] Process INPUT [PID 12150] is responsive!
+[2026-01-15 21:36:49] (PID 12152) [WATCHDOG] Process BLACKBOARD [PID 12151] is responsive!
+[2026-01-15 21:36:49] (PID 12152) [WATCHDOG] Process OBSTACLE [PID 12111] is responsive!
+[2026-01-15 21:36:49] (PID 12152) [WATCHDOG] Process TARGET [PID 12112] is responsive!
+[2026-01-15 21:36:49] (PID 12152) [WATCHDOG] All 4 processes checked. Waiting next cycle...
+[2026-01-15 21:36:51] (PID 12152) [WATCHDOG] Process INPUT [PID 12150] is responsive!
+[2026-01-15 21:36:51] (PID 12152) [WATCHDOG] Process BLACKBOARD [PID 12151] is responsive!
+[2026-01-15 21:36:51] (PID 12152) [WATCHDOG] Process OBSTACLE [PID 12111] is responsive!
+[2026-01-15 21:36:51] (PID 12152) [WATCHDOG] Process TARGET [PID 12112] is responsive!
+[2026-01-15 21:36:51] (PID 12152) [WATCHDOG] All 4 processes checked. Waiting next cycle...
+[2026-01-15 21:36:53] (PID 12152) [WATCHDOG] Process INPUT [PID 12150] is responsive!
+[2026-01-15 21:36:53] (PID 12152) [WATCHDOG] Process BLACKBOARD [PID 12151] is responsive!
+[2026-01-15 21:36:53] (PID 12152) [WATCHDOG] Process OBSTACLE [PID 12111] is responsive!
+[2026-01-15 21:36:53] (PID 12152) [WATCHDOG] Process TARGET [PID 12112] is responsive!
+[2026-01-15 21:36:53] (PID 12152) [WATCHDOG] All 4 processes checked. Waiting next cycle...
+[2026-01-15 21:36:55] (PID 12152) [WATCHDOG] Process INPUT [PID 12150] is responsive!
+[2026-01-15 21:36:55] (PID 12152) [WATCHDOG] Process BLACKBOARD [PID 12151] is responsive!
+[2026-01-15 21:36:55] (PID 12152) [WATCHDOG] Process OBSTACLE [PID 12111] is responsive!
+[2026-01-15 21:36:55] (PID 12152) [WATCHDOG] Process TARGET [PID 12112] is responsive!
+[2026-01-15 21:36:55] (PID 12152) [WATCHDOG] All 4 processes checked. Waiting next cycle...
+[2026-01-15 21:36:57] (PID 12152) [WATCHDOG] Process INPUT [PID 12150] is responsive!
+[2026-01-15 21:36:57] (PID 12152) [WATCHDOG] Process BLACKBOARD [PID 12151] is responsive!
+[2026-01-15 21:36:57] (PID 12152) [WATCHDOG] Process OBSTACLE [PID 12111] is responsive!
+[2026-01-15 21:36:57] (PID 12152) [WATCHDOG] Process TARGET [PID 12112] is responsive!
+[2026-01-15 21:36:57] (PID 12152) [WATCHDOG] All 4 processes checked. Waiting next cycle...
+[2026-01-15 21:36:59] (PID 12152) [WATCHDOG] Process INPUT [PID 12150] is responsive!
+[2026-01-15 21:36:59] (PID 12152) [WATCHDOG] Process BLACKBOARD [PID 12151] is responsive!
+[2026-01-15 21:36:59] (PID 12152) [WATCHDOG] Process OBSTACLE [PID 12111] is responsive!
+[2026-01-15 21:36:59] (PID 12152) [WATCHDOG] Process TARGET [PID 12112] is responsive!
+[2026-01-15 21:36:59] (PID 12152) [WATCHDOG] All 4 processes checked. Waiting next cycle...
+[2026-01-15 21:37:01] (PID 12152) [WATCHDOG] Process INPUT [PID 12150] is responsive!
+[2026-01-15 21:37:01] (PID 12152) [WATCHDOG] Process BLACKBOARD [PID 12151] is responsive!
+[2026-01-15 21:37:01] (PID 12152) [WATCHDOG] Process OBSTACLE [PID 12111] is responsive!
+[2026-01-15 21:37:01] (PID 12152) [WATCHDOG] Process TARGET [PID 12112] is responsive!
+[2026-01-15 21:37:01] (PID 12152) [WATCHDOG] All 4 processes checked. Waiting next cycle...
+[2026-01-15 21:37:03] (PID 12152) [WATCHDOG] Process INPUT [PID 12150] is responsive!
+[2026-01-15 21:37:03] (PID 12152) [WATCHDOG] Process BLACKBOARD [PID 12151] is responsive!
+[2026-01-15 21:37:03] (PID 12152) [WATCHDOG] Process OBSTACLE [PID 12111] is responsive!
+[2026-01-15 21:37:03] (PID 12152) [WATCHDOG] Process TARGET [PID 12112] is responsive!
+[2026-01-15 21:37:03] (PID 12152) [WATCHDOG] All 4 processes checked. Waiting next cycle...
+[2026-01-15 21:37:05] (PID 12152) [WATCHDOG] Process INPUT [PID 12150] is responsive!
+[2026-01-15 21:37:05] (PID 12152) [WATCHDOG] Process BLACKBOARD [PID 12151] is responsive!
+[2026-01-15 21:37:05] (PID 12152) [WATCHDOG] Process OBSTACLE [PID 12111] is responsive!
+[2026-01-15 21:37:05] (PID 12152) [WATCHDOG] Process TARGET [PID 12112] is responsive!
+[2026-01-15 21:37:05] (PID 12152) [WATCHDOG] All 4 processes checked. Waiting next cycle...
+[2026-01-15 21:37:07] (PID 12152) [WATCHDOG] Process INPUT [PID 12150] is responsive!
+[2026-01-15 21:37:07] (PID 12152) [WATCHDOG] Process BLACKBOARD [PID 12151] is responsive!
+[2026-01-15 21:37:07] (PID 12152) [WATCHDOG] Process OBSTACLE [PID 12111] is responsive!
+[2026-01-15 21:37:07] (PID 12152) [WATCHDOG] Process TARGET [PID 12112] is responsive!
+[2026-01-15 21:37:07] (PID 12152) [WATCHDOG] All 4 processes checked. Waiting next cycle...
+[2026-01-15 21:37:09] (PID 12152) [WATCHDOG] Process INPUT [PID 12150] is responsive!
+[2026-01-15 21:37:09] (PID 12152) [WATCHDOG] Process BLACKBOARD [PID 12151] is responsive!
+[2026-01-15 21:37:09] (PID 12152) [WATCHDOG] Process OBSTACLE [PID 12111] is responsive!
+[2026-01-15 21:37:09] (PID 12152) [WATCHDOG] Process TARGET [PID 12112] is responsive!
+[2026-01-15 21:37:09] (PID 12152) [WATCHDOG] All 4 processes checked. Waiting next cycle...
+[2026-01-15 21:37:11] (PID 12152) [WATCHDOG] Process INPUT [PID 12150] is responsive!
+[2026-01-15 21:37:11] (PID 12152) [WATCHDOG] Process BLACKBOARD [PID 12151] is responsive!
+[2026-01-15 21:37:11] (PID 12152) [WATCHDOG] Process OBSTACLE [PID 12111] is responsive!
+[2026-01-15 21:37:11] (PID 12152) [WATCHDOG] Process TARGET [PID 12112] is responsive!
+[2026-01-15 21:37:11] (PID 12152) [WATCHDOG] All 4 processes checked. Waiting next cycle...
+[2026-01-15 21:37:13] (PID 12152) [WATCHDOG] Process INPUT [PID 12150] is responsive!
+[2026-01-15 21:37:13] (PID 12152) [WATCHDOG] Process BLACKBOARD [PID 12151] is responsive!
+[2026-01-15 21:37:13] (PID 12152) [WATCHDOG] Process OBSTACLE [PID 12111] is responsive!
+[2026-01-15 21:37:13] (PID 12152) [WATCHDOG] Process TARGET [PID 12112] is responsive!
+[2026-01-15 21:37:13] (PID 12152) [WATCHDOG] All 4 processes checked. Waiting next cycle...
+[2026-01-15 21:37:15] (PID 12152) [WATCHDOG] Process INPUT [PID 12150] is responsive!
+[2026-01-15 21:37:15] (PID 12152) [WATCHDOG] Process BLACKBOARD [PID 12151] is responsive!
+[2026-01-15 21:37:15] (PID 12152) [WATCHDOG] Process OBSTACLE [PID 12111] is responsive!
+[2026-01-15 21:37:15] (PID 12152) [WATCHDOG] Process TARGET [PID 12112] is responsive!
+[2026-01-15 21:37:15] (PID 12152) [WATCHDOG] All 4 processes checked. Waiting next cycle...
+[2026-01-15 21:37:17] (PID 12152) [WATCHDOG] Process INPUT [PID 12150] is responsive!
+[2026-01-15 21:37:17] (PID 12152) [WATCHDOG] Process BLACKBOARD [PID 12151] is responsive!
+[2026-01-15 21:37:17] (PID 12152) [WATCHDOG] Process OBSTACLE [PID 12111] is responsive!
+[2026-01-15 21:37:17] (PID 12152) [WATCHDOG] Process TARGET [PID 12112] is responsive!
+[2026-01-15 21:37:17] (PID 12152) [WATCHDOG] All 4 processes checked. Waiting next cycle...
+[2026-01-15 21:37:19] (PID 12152) [WATCHDOG] Process INPUT [PID 12150] is responsive!
+[2026-01-15 21:37:19] (PID 12152) [WATCHDOG] Process BLACKBOARD [PID 12151] is responsive!
+[2026-01-15 21:37:19] (PID 12152) [WATCHDOG] Process OBSTACLE [PID 12111] is responsive!
+[2026-01-15 21:37:19] (PID 12152) [WATCHDOG] Process TARGET [PID 12112] is responsive!
+[2026-01-15 21:37:19] (PID 12152) [WATCHDOG] All 4 processes checked. Waiting next cycle...
+[2026-01-15 21:37:21] (PID 12152) [WATCHDOG] Process INPUT [PID 12150] is responsive!
+[2026-01-15 21:37:21] (PID 12152) [WATCHDOG] Process BLACKBOARD [PID 12151] is responsive!
+[2026-01-15 21:37:21] (PID 12152) [WATCHDOG] Process OBSTACLE [PID 12111] is responsive!
+[2026-01-15 21:37:21] (PID 12152) [WATCHDOG] Process TARGET [PID 12112] is responsive!
+[2026-01-15 21:37:21] (PID 12152) [WATCHDOG] All 4 processes checked. Waiting next cycle...
+[2026-01-15 21:37:23] (PID 12152) [WATCHDOG] Process INPUT [PID 12150] is responsive!
+[2026-01-15 21:37:23] (PID 12152) [WATCHDOG] Process BLACKBOARD [PID 12151] is responsive!
+[2026-01-15 21:37:23] (PID 12152) [WATCHDOG] Process OBSTACLE [PID 12111] is responsive!
+[2026-01-15 21:37:23] (PID 12152) [WATCHDOG] Process TARGET [PID 12112] is responsive!
+[2026-01-15 21:37:23] (PID 12152) [WATCHDOG] All 4 processes checked. Waiting next cycle...
+[2026-01-15 21:37:25] (PID 12152) [WATCHDOG] Process INPUT [PID 12150] is responsive!
+[2026-01-15 21:37:25] (PID 12152) [WATCHDOG] Process BLACKBOARD [PID 12151] is responsive!
+[2026-01-15 21:37:25] (PID 12152) [WATCHDOG] Process OBSTACLE [PID 12111] is responsive!
+[2026-01-15 21:37:25] (PID 12152) [WATCHDOG] Process TARGET [PID 12112] is responsive!
+[2026-01-15 21:37:25] (PID 12152) [WATCHDOG] All 4 processes checked. Waiting next cycle...
+[2026-01-15 21:37:27] (PID 12152) [WATCHDOG] Process INPUT [PID 12150] is responsive!
+[2026-01-15 21:37:27] (PID 12152) [WATCHDOG] Process BLACKBOARD [PID 12151] is responsive!
+[2026-01-15 21:37:27] (PID 12152) [WATCHDOG] Process OBSTACLE [PID 12111] is responsive!
+[2026-01-15 21:37:27] (PID 12152) [WATCHDOG] Process TARGET [PID 12112] is responsive!
+[2026-01-15 21:37:27] (PID 12152) [WATCHDOG] All 4 processes checked. Waiting next cycle...
+[2026-01-15 21:37:29] (PID 12152) [WATCHDOG] Process INPUT [PID 12150] is responsive!
+[2026-01-15 21:37:29] (PID 12152) [WATCHDOG] Process BLACKBOARD [PID 12151] is responsive!
+[2026-01-15 21:37:29] (PID 12152) [WATCHDOG] Process OBSTACLE [PID 12111] is responsive!
+[2026-01-15 21:37:29] (PID 12152) [WATCHDOG] Process TARGET [PID 12112] is responsive!
+[2026-01-15 21:37:29] (PID 12152) [WATCHDOG] All 4 processes checked. Waiting next cycle...
+[2026-01-15 21:37:31] (PID 12152) [WATCHDOG] Process INPUT [PID 12150] is responsive!
+[2026-01-15 21:37:31] (PID 12152) [WATCHDOG] Process BLACKBOARD [PID 12151] is responsive!
+[2026-01-15 21:37:31] (PID 12152) [WATCHDOG] Process OBSTACLE [PID 12111] is responsive!
+[2026-01-15 21:37:31] (PID 12152) [WATCHDOG] Process TARGET [PID 12112] is responsive!
+[2026-01-15 21:37:31] (PID 12152) [WATCHDOG] All 4 processes checked. Waiting next cycle...
+[2026-01-15 21:37:33] (PID 12152) [WATCHDOG] Process INPUT [PID 12150] is responsive!
+[2026-01-15 21:37:33] (PID 12152) [WATCHDOG] Process BLACKBOARD [PID 12151] is responsive!
+[2026-01-15 21:37:33] (PID 12152) [WATCHDOG] Process OBSTACLE [PID 12111] is responsive!
+[2026-01-15 21:37:33] (PID 12152) [WATCHDOG] Process TARGET [PID 12112] is responsive!
+[2026-01-15 21:37:33] (PID 12152) [WATCHDOG] All 4 processes checked. Waiting next cycle...
+[2026-01-15 21:37:35] (PID 12152) [WATCHDOG] Process INPUT [PID 12150] is responsive!
+[2026-01-15 21:37:35] (PID 12152) [WATCHDOG] Process BLACKBOARD [PID 12151] is responsive!
+[2026-01-15 21:37:35] (PID 12152) [WATCHDOG] Process OBSTACLE [PID 12111] is responsive!
+[2026-01-15 21:37:35] (PID 12152) [WATCHDOG] Process TARGET [PID 12112] is responsive!
+[2026-01-15 21:37:35] (PID 12152) [WATCHDOG] All 4 processes checked. Waiting next cycle...
+[2026-01-15 21:37:37] (PID 12152) [WATCHDOG] Process INPUT [PID 12150] is responsive!
+[2026-01-15 21:37:37] (PID 12152) [WATCHDOG] Process BLACKBOARD [PID 12151] is responsive!
+[2026-01-15 21:37:37] (PID 12152) [WATCHDOG] Process OBSTACLE [PID 12111] is responsive!
+[2026-01-15 21:37:37] (PID 12152) [WATCHDOG] Process TARGET [PID 12112] is responsive!
+[2026-01-15 21:37:37] (PID 12152) [WATCHDOG] All 4 processes checked. Waiting next cycle...
+[2026-01-15 21:37:39] (PID 12152) [WATCHDOG] Process INPUT [PID 12150] is responsive!
+[2026-01-15 21:37:39] (PID 12152) [WATCHDOG] Process BLACKBOARD [PID 12151] is responsive!
+[2026-01-15 21:37:39] (PID 12152) [WATCHDOG] Process OBSTACLE [PID 12111] is responsive!
+[2026-01-15 21:37:39] (PID 12152) [WATCHDOG] Process TARGET [PID 12112] is responsive!
+[2026-01-15 21:37:39] (PID 12152) [WATCHDOG] All 4 processes checked. Waiting next cycle...
+[2026-01-15 21:37:41] (PID 12152) [WATCHDOG] Process INPUT [PID 12150] is responsive!
+[2026-01-15 21:37:41] (PID 12152) [WATCHDOG] Process BLACKBOARD [PID 12151] is responsive!
+[2026-01-15 21:37:41] (PID 12152) [WATCHDOG] Process OBSTACLE [PID 12111] is responsive!
+[2026-01-15 21:37:41] (PID 12152) [WATCHDOG] Process TARGET [PID 12112] is responsive!
+[2026-01-15 21:37:41] (PID 12152) [WATCHDOG] All 4 processes checked. Waiting next cycle...
+[2026-01-15 21:37:43] (PID 12152) [WATCHDOG] Process INPUT [PID 12150] is responsive!
+[2026-01-15 21:37:43] (PID 12152) [WATCHDOG] Process BLACKBOARD [PID 12151] is responsive!
+[2026-01-15 21:37:43] (PID 12152) [WATCHDOG] Process OBSTACLE [PID 12111] is responsive!
+[2026-01-15 21:37:43] (PID 12152) [WATCHDOG] Process TARGET [PID 12112] is responsive!
+[2026-01-15 21:37:43] (PID 12152) [WATCHDOG] All 4 processes checked. Waiting next cycle...
+[2026-01-15 21:37:45] (PID 12152) [WATCHDOG] Process INPUT [PID 12150] is responsive!
+[2026-01-15 21:37:45] (PID 12152) [WATCHDOG] Process BLACKBOARD [PID 12151] is responsive!
+[2026-01-15 21:37:45] (PID 12152) [WATCHDOG] Process OBSTACLE [PID 12111] is responsive!
+[2026-01-15 21:37:45] (PID 12152) [WATCHDOG] Process TARGET [PID 12112] is responsive!
+[2026-01-15 21:37:45] (PID 12152) [WATCHDOG] All 4 processes checked. Waiting next cycle...
+[2026-01-15 21:37:47] (PID 12152) [WATCHDOG] Process INPUT [PID 12150] is responsive!
+[2026-01-15 21:37:47] (PID 12152) [WATCHDOG] Process BLACKBOARD [PID 12151] is responsive!
+[2026-01-15 21:37:47] (PID 12152) [WATCHDOG] Process OBSTACLE [PID 12111] is responsive!
+[2026-01-15 21:37:47] (PID 12152) [WATCHDOG] Process TARGET [PID 12112] is responsive!
+[2026-01-15 21:37:47] (PID 12152) [WATCHDOG] All 4 processes checked. Waiting next cycle...
+[2026-01-15 21:37:49] (PID 12152) [WATCHDOG] Process INPUT [PID 12150] is responsive!
+[2026-01-15 21:37:49] (PID 12152) [WATCHDOG] Process BLACKBOARD [PID 12151] is responsive!
+[2026-01-15 21:37:49] (PID 12152) [WATCHDOG] Process OBSTACLE [PID 12111] is responsive!
+[2026-01-15 21:37:49] (PID 12152) [WATCHDOG] Process TARGET [PID 12112] is responsive!
+[2026-01-15 21:37:49] (PID 12152) [WATCHDOG] All 4 processes checked. Waiting next cycle...
+[2026-01-15 21:37:51] (PID 12152) [WATCHDOG] Process INPUT [PID 12150] is responsive!
+[2026-01-15 21:37:51] (PID 12152) [WATCHDOG] Process BLACKBOARD [PID 12151] is responsive!
+[2026-01-15 21:37:51] (PID 12152) [WATCHDOG] Process OBSTACLE [PID 12111] is responsive!
+[2026-01-15 21:37:51] (PID 12152) [WATCHDOG] Process TARGET [PID 12112] is responsive!
+[2026-01-15 21:37:51] (PID 12152) [WATCHDOG] All 4 processes checked. Waiting next cycle...
+[2026-01-15 21:37:53] (PID 12152) [WATCHDOG] Process INPUT [PID 12150] is responsive!
+[2026-01-15 21:37:53] (PID 12152) [WATCHDOG] Process BLACKBOARD [PID 12151] is responsive!
+[2026-01-15 21:37:53] (PID 12152) [WATCHDOG] Process OBSTACLE [PID 12111] is responsive!
+[2026-01-15 21:37:53] (PID 12152) [WATCHDOG] Process TARGET [PID 12112] is responsive!
+[2026-01-15 21:37:53] (PID 12152) [WATCHDOG] All 4 processes checked. Waiting next cycle...
+[2026-01-15 21:37:55] (PID 12152) [WATCHDOG] Process INPUT [PID 12150] is responsive!
+[2026-01-15 21:37:55] (PID 12152) [WATCHDOG] Process BLACKBOARD [PID 12151] is responsive!
+[2026-01-15 21:37:55] (PID 12152) [WATCHDOG] Process OBSTACLE [PID 12111] is responsive!
+[2026-01-15 21:37:55] (PID 12152) [WATCHDOG] Process TARGET [PID 12112] is responsive!
+[2026-01-15 21:37:55] (PID 12152) [WATCHDOG] All 4 processes checked. Waiting next cycle...
+[2026-01-15 21:37:57] (PID 12152) [WATCHDOG] Process INPUT [PID 12150] is responsive!
+[2026-01-15 21:37:57] (PID 12152) [WATCHDOG] Process BLACKBOARD [PID 12151] is responsive!
+[2026-01-15 21:37:57] (PID 12152) [WATCHDOG] Process OBSTACLE [PID 12111] is responsive!
+[2026-01-15 21:37:57] (PID 12152) [WATCHDOG] Process TARGET [PID 12112] is responsive!
+[2026-01-15 21:37:57] (PID 12152) [WATCHDOG] All 4 processes checked. Waiting next cycle...
+[2026-01-15 21:37:59] (PID 12152) [WATCHDOG] Process INPUT [PID 12150] is responsive!
+[2026-01-15 21:37:59] (PID 12152) [WATCHDOG] Process BLACKBOARD [PID 12151] is responsive!
+[2026-01-15 21:37:59] (PID 12152) [WATCHDOG] Process OBSTACLE [PID 12111] is responsive!
+[2026-01-15 21:37:59] (PID 12152) [WATCHDOG] Process TARGET [PID 12112] is responsive!
+[2026-01-15 21:37:59] (PID 12152) [WATCHDOG] All 4 processes checked. Waiting next cycle...
+[2026-01-15 21:38:01] (PID 12152) [WATCHDOG] Process INPUT [PID 12150] is responsive!
+[2026-01-15 21:38:01] (PID 12152) [WATCHDOG] Process BLACKBOARD [PID 12151] is responsive!
+[2026-01-15 21:38:01] (PID 12152) [WATCHDOG] Process OBSTACLE [PID 12111] is responsive!
+[2026-01-15 21:38:01] (PID 12152) [WATCHDOG] Process TARGET [PID 12112] is responsive!
+[2026-01-15 21:38:01] (PID 12152) [WATCHDOG] All 4 processes checked. Waiting next cycle...
+[2026-01-15 21:38:03] (PID 12152) [WATCHDOG] Process INPUT [PID 12150] is responsive!
+[2026-01-15 21:38:03] (PID 12152) [WATCHDOG] Process BLACKBOARD [PID 12151] is responsive!
+[2026-01-15 21:38:03] (PID 12152) [WATCHDOG] Process OBSTACLE [PID 12111] is responsive!
+[2026-01-15 21:38:03] (PID 12152) [WATCHDOG] Process TARGET [PID 12112] is responsive!
+[2026-01-15 21:38:03] (PID 12152) [WATCHDOG] All 4 processes checked. Waiting next cycle...
+[2026-01-15 21:38:05] (PID 12152) [WATCHDOG] Process INPUT [PID 12150] is responsive!
+[2026-01-15 21:38:05] (PID 12152) [WATCHDOG] Process BLACKBOARD [PID 12151] is responsive!
+[2026-01-15 21:38:05] (PID 12152) [WATCHDOG] Process OBSTACLE [PID 12111] is responsive!
+[2026-01-15 21:38:05] (PID 12152) [WATCHDOG] Process TARGET [PID 12112] is responsive!
+[2026-01-15 21:38:05] (PID 12152) [WATCHDOG] All 4 processes checked. Waiting next cycle...
+[2026-01-15 21:38:07] (PID 12152) [WATCHDOG] Process INPUT [PID 12150] is responsive!
+[2026-01-15 21:38:07] (PID 12152) [WATCHDOG] Process BLACKBOARD [PID 12151] is responsive!
+[2026-01-15 21:38:07] (PID 12152) [WATCHDOG] Process OBSTACLE [PID 12111] is responsive!
+[2026-01-15 21:38:07] (PID 12152) [WATCHDOG] Process TARGET [PID 12112] is responsive!
+[2026-01-15 21:38:07] (PID 12152) [WATCHDOG] All 4 processes checked. Waiting next cycle...
+[2026-01-15 21:38:09] (PID 12152) [WATCHDOG] Process INPUT [PID 12150] is responsive!
+[2026-01-15 21:38:09] (PID 12152) [WATCHDOG] Process BLACKBOARD [PID 12151] is responsive!
+[2026-01-15 21:38:09] (PID 12152) [WATCHDOG] Process OBSTACLE [PID 12111] is responsive!
+[2026-01-15 21:38:09] (PID 12152) [WATCHDOG] Process TARGET [PID 12112] is responsive!
+[2026-01-15 21:38:09] (PID 12152) [WATCHDOG] All 4 processes checked. Waiting next cycle...
+[2026-01-15 21:38:11] (PID 12152) [WATCHDOG] ALERT! Process INPUT [PID 12150] timed out after 200 ms!
+[2026-01-15 21:38:11] (PID 12152) [WATCHDOG] Killing system due to unresponsive process.

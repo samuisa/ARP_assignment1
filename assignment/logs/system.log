@@ -1,9 +1,24 @@
-[2026-01-15 14:42:05] (PID 16284) [MAIN] PROGRAM STARTED
-[2026-01-15 14:42:20] (PID 16284) [MAIN] Starting in MODE: 2
-[2026-01-15 14:42:20] (PID 16284) [MAIN] Pipes created successfully
-[2026-01-15 14:42:20] (PID 16284) [MAIN] All processes started (input=16288 drone=16290 bb=16289 obst=-1 targ=-1 watchdog=-1 network=16291)
-[2026-01-15 14:42:20] (PID 16325) [BB] FDs: input=3 drone=7 obst=10 target=14 wd=18 network=21
-[2026-01-15 14:42:20] (PID 16325) [BB] PID published securely
-[2026-01-15 14:42:20] (PID 16325) [BB] Window Resized to: 102x31
-[2026-01-15 14:42:20] (PID 16325) [BB] Ready and GUI started
-[2026-01-15 14:42:20] (PID 16290) [DRONE] Spawned at 5.00 5.00
+[2026-01-15 21:36:31] (PID 12045) [MAIN] PROGRAM STARTED
+[2026-01-15 21:36:42] (PID 12045) [MAIN] Starting in MODE: 1
+[2026-01-15 21:36:42] (PID 12045) [MAIN] Pipes created successfully
+[2026-01-15 21:36:42] (PID 12045) [MAIN] All processes started (input=12108 drone=12110 bb=12109 obst=12111 targ=12112 watchdog=12113 network=-1)
+[2026-01-15 21:36:42] (PID 12111) [OBST] Started
+[2026-01-15 21:36:42] (PID 12111) [OBST] Waiting for Watchdog...
+[2026-01-15 21:36:42] (PID 12112) [TARG] Started with PID: 12112
+[2026-01-15 21:36:42] (PID 12112) [TARG] Waiting for Watchdog...
+[2026-01-15 21:36:43] (PID 12151) [BB] FDs: input=3 drone=7 obst=10 target=14 wd=18 network=21
+[2026-01-15 21:36:43] (PID 12151) [BB] Waiting for Watchdog...
+[2026-01-15 21:36:43] (PID 12151) [BB] Watchdog found (PID 12152)
+[2026-01-15 21:36:43] (PID 12151) [BB] PID published securely
+[2026-01-15 21:36:43] (PID 12151) [BB] Window Resized to: 100x27
+[2026-01-15 21:36:43] (PID 12151) [BB] Ready and GUI started
+[2026-01-15 21:36:43] (PID 12110) [DRONE] Spawned at 50.00 13.50
+[2026-01-15 21:36:43] (PID 12111) [OBST] Watchdog found (PID 12152)
+[2026-01-15 21:36:43] (PID 12112) [TARG] Watchdog found (PID 12152)
+[2026-01-15 21:36:43] (PID 12111) [OBST] PID published securely
+[2026-01-15 21:36:43] (PID 12111) [OBST] Generated 12 obstacles
+[2026-01-15 21:36:43] (PID 12112) [TARG] PID published securely
+[2026-01-15 21:36:43] (PID 12151) [BB] received 12 obstacles
+[2026-01-15 21:36:43] (PID 12112) [TARG] Generated 2 targets
+[2026-01-15 21:38:12] (PID 12112) [TARG] Pipe closed, exiting.
+[2026-01-15 21:38:12] (PID 12111) [OBST] Pipe closed, exiting.
