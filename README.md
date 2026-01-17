@@ -92,34 +92,32 @@ The parameter files store useful structs and system parameters necessary for the
 ```bash
 .
 ├── exec
-│   ├── blackboard
-│   ├── client
-│   ├── drone
-│   ├── input
-│   ├── main
-│   ├── network
-│   ├── obstacle
-│   ├── server
-│   ├── target
-│   └── watchdog
+│   ├── blackboard
+│   ├── client
+│   ├── drone
+│   ├── input
+│   ├── main
+│   ├── network
+│   ├── obstacle
+│   ├── server
+│   ├── target
+│   └── watchdog
 ├── logs
-│   ├── server_client.log
-│   ├── system.log
-│   └── watchdog.log
+│   ├── server_client.log
+│   ├── system.log
+│   └── watchdog.log
 ├── Makefile
-├── network_block.c
-├── network_nonblock.c
 ├── obj
-│   ├── app_common.o
-│   ├── blackboard.o
-│   ├── drone.o
-│   ├── input.o
-│   ├── log.o
-│   ├── main.o
-│   ├── network.o
-│   ├── obstacle.o
-│   ├── target.o
-│   └── watchdog.o
+│   ├── app_common.o
+│   ├── blackboard.o
+│   ├── drone.o
+│   ├── input.o
+│   ├── log.o
+│   ├── main.o
+│   ├── network.o
+│   ├── obstacle.o
+│   ├── target.o
+│   └── watchdog.o
 ├── pid_registry.txt
 └── src
     ├── app_blackboard.h
@@ -131,11 +129,13 @@ The parameter files store useful structs and system parameters necessary for the
     ├── log.c
     ├── log.h
     ├── main.c
+    ├── network_block.c
     ├── network.c
     ├── obstacle.c
     ├── process_pid.h
     ├── target.c
     └── watchdog.c
+
 ```
 
 <br>**HOW TO RUN THE SIMULATION**
