@@ -1,4 +1,4 @@
-# ARP_PROJECT
+# ARP PROJECT
 This project implements a simulation of a drone moving in a 2D environment.
 
 The system supports two operating modes:
@@ -152,3 +152,8 @@ The parameter files store useful structs and system parameters necessary for the
 - choose 1 for Standalone or 2 for Networked.
 - if Networked, select your role: 1 for Server (listens for connections) or 2 for Client (connects to an IP).
 - clients must provide the Server's IP address and Port Number.
+
+<br>**INFOs FOR TESTING**<br>
+Code tested the 15/01/2026 with 2 groups. <br>
+1° Group: Antonio Zerbato  <br>
+2° Group: Arianna Bardoni & Antonio Mazzotta
