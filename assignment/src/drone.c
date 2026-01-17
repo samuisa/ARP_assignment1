@@ -26,7 +26,6 @@
 #undef EPSILON
 #define EPSILON 0.001f
 
-// Configurazione Frequenza
 #define PHYSICS_DT_SEC 0.001f    // 1ms physics step
 #define RENDER_FPS 30            // 30 invii al secondo alla blackboard
 #define RENDER_DT_NS (1000000000L / RENDER_FPS)
@@ -105,7 +104,6 @@ int main(int argc, char *argv[]) {
     int role    = atoi(argv[4]);
 
     signal(SIGPIPE, SIG_IGN); 
-    // Fondamentale: Pipe Non-Blocking per svuotarla velocemente
     fcntl(fd_in, F_SETFL, O_NONBLOCK);
 
     Drone drn = {0};
@@ -115,7 +113,6 @@ int main(int argc, char *argv[]) {
 
     // Watchdog Setup
     if(mode == MODE_STANDALONE){
-        // 1. PRIMA PUBBLICA IL PID (Così il watchdog sa che esistiamo)
         FILE *fp_pid = fopen(PID_FILE_PATH, "a");
         if (!fp_pid) {
             perror("fopen PID file");
@@ -128,16 +125,12 @@ int main(int argc, char *argv[]) {
         flock(fd_pid, LOCK_UN);
         fclose(fp_pid);
 
-        // 2. POI SETUP SEGNALI
         struct sigaction sa;
         sa.sa_handler = watchdog_ping_handler;
         sigemptyset(&sa.sa_mask);
         sa.sa_flags = SA_RESTART;
         sigaction(SIGUSR1, &sa, NULL);
 
-        // 3. INFINE ASPETTA IL PID DEL WATCHDOG
-        // Se il WD ci pinga mentre siamo qui, il handler ignorerà il segnale
-        // perché watchdog_pid è ancora -1. Al prossimo ciclo saremo pronti.
         wait_for_watchdog_pid();
     }
 
@@ -157,21 +150,20 @@ int main(int argc, char *argv[]) {
         while(1) {
             ssize_t n = read(fd_in, &msg, sizeof(Message));
             if (n < 0) {
-                if (errno == EAGAIN || errno == EWOULDBLOCK) break; // Pipe vuota
-                if (errno == EINTR) continue; // Interrotto da segnale, riprova
-                break; // Errore vero
+                if (errno == EAGAIN || errno == EWOULDBLOCK) break;
+                if (errno == EINTR) continue;
+                break;
             }
-            if (n == 0) break; // EOF
+            if (n == 0) break;
 
             // Handle Message
             switch (msg.type) {
                 case MSG_TYPE_SIZE: {
                     sscanf(msg.data, "%d %d", &win_width, &win_height);
 
-                    // Se non siamo ancora spawnati, questo è il momento della nascita!
                     if (!spawned) {
                         
-                        // A. Posizionamento
+                        // A. Spawn
                         if (mode == MODE_STANDALONE) {
                             drn.x = win_width / 2.0f;
                             drn.y = win_height / 2.0f;
@@ -181,21 +173,18 @@ int main(int argc, char *argv[]) {
                                 drn.x = 5.0f; drn.y = 5.0f;
                             } 
                             else if (role == MODE_CLIENT) {
-                                // Il client spawna in basso a destra
                                 drn.x = (float)win_width - 5.0f;
                                 drn.y = (float)win_height - 5.0f;
                             }
                         }
 
-                        // B. RESET FISICA (Zero inerzia pregressa)
                         drn.x_1 = drn.x_2 = drn.x;
                         drn.y_1 = drn.y_2 = drn.y;
-                        drn.Fx = drn.Fy = 0.0f; // Reset forze input utente
+                        drn.Fx = drn.Fy = 0.0f;
                         
-                        // C. Sblocca il drone
                         spawned = true;
                         
-                        // D. Invia posizione iniziale
+                        // B. Sends initial position
                         send_position(msg, drn.x, drn.y, fd_out);
                         logMessage(LOG_PATH, "[DRONE] Spawned at %.2f %.2f", drn.x, drn.y);
                     }
@@ -238,10 +227,10 @@ int main(int argc, char *argv[]) {
                 }
                 case MSG_TYPE_EXIT: {
                     logMessage(LOG_PATH, "[DRONE] Received EXIT signal. Shutting down.");
-                    goto quit; // Salta direttamente alla pulizia
+                    goto quit;
                 }
             }
-        } // End Input While
+        }
 
         // ====================================================================
         // STEP 2: PHYSICS CALCULATION (Run every cycle)
@@ -319,7 +308,6 @@ int main(int argc, char *argv[]) {
             last_render_time = now;
         }
 
-        // Sleep to maintain ~1000Hz Physics Loop
         usleep(1000); 
     }
 

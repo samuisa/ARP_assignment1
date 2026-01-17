@@ -1,10 +1,10 @@
-/* ======================================================================================
- * FILE: network.c
- * Protocollo STRETTO: Request -> Datum -> Ack
- * Separatore: \n (Newline strict)
- * Modalità: Non-Blocking I/O Multiplexing
- * WITH VERBOSE LOGGING (LOG_PATH_SC)
- * ====================================================================================== */
+/* * ======================================================================================
+ * MACRO-SECTION 1: HEADERS, CONSTANTS, AND GLOBAL STATE
+ * ======================================================================================
+ * This section defines the core data structures, state enums for the protocol,
+ * and global buffers used for non-blocking communication.
+ */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -24,25 +24,36 @@
 #include "log.h"
 
 #define BUFSZ 1024 
+
+/* * Rotation angle for coordinate transformation. 
+ * If non-zero, the view is rotated between Local and Virtual space.
+ */
 static float alpha = 0.0f;
 
-// --- STATI DEL PROTOCOLLO ---
+/* * Network Protocol State Machine.
+ * The protocol follows a strict sequence: Command -> Data -> Acknowledgment.
+ */
 typedef enum {
-    SV_SEND_CMD_DRONE,   
-    SV_SEND_DATA_DRONE,  
-    SV_WAIT_DOK,         
-    SV_SEND_CMD_OBST,    
-    SV_WAIT_DATA_OBST,   
-    CL_WAIT_COMMAND,     
-    CL_WAIT_DRONE_DATA,  
-    CL_SEND_OBST_DATA,   
-    CL_WAIT_POK          
+    // SERVER STATES
+    SV_SEND_CMD_DRONE,   // Tell client: "I am sending drone data"
+    SV_SEND_DATA_DRONE,  // Send actual coordinates
+    SV_WAIT_DOK,         // Wait for Client to acknowledge drone data
+    SV_SEND_CMD_OBST,    // Tell client: "Send me your obstacle data"
+    SV_WAIT_DATA_OBST,   // Wait for Client to reply with data
+    
+    // CLIENT STATES
+    CL_WAIT_COMMAND,     // Idle, waiting for Server instruction
+    CL_WAIT_DRONE_DATA,  // Server said "drone", waiting for coords
+    CL_SEND_OBST_DATA,   // Server said "obst", sending my coords
+    CL_WAIT_POK          // Wait for Server to acknowledge my data
 } NetState;
 
 static NetState net_state;
 static int net_fd = -1;
 
-// Buffer per socket non bloccante
+/* * Buffer structure for Non-Blocking I/O.
+ * Accumulates partial reads until a full newline-terminated message is found.
+ */
 typedef struct {
     char data[BUFSZ];
     int len;
@@ -50,11 +61,18 @@ typedef struct {
 
 static SocketBuffer sock_buf = { .len = 0 };
 
+/* Cached local positions to be sent over the network */
 static float my_last_x = 0.0f;
 static float my_last_y = 0.0f;
 
-// --- UTILITY ---
 
+/* * ======================================================================================
+ * MACRO-SECTION 2: UTILITY AND MATHEMATICS
+ * ======================================================================================
+ * Helper functions for debugging, coordinate transformation, and file descriptor config.
+ */
+
+/* Debug helper: Converts State Enum to String */
 const char* state_to_str(NetState s) {
     switch(s) {
         case SV_SEND_CMD_DRONE: return "SV_SEND_CMD_DRONE";
@@ -70,13 +88,13 @@ const char* state_to_str(NetState s) {
     }
 }
 
-
+/* * Converts Local Coordinates (Screen pixels) to Virtual Coordinates (Shared World).
+ * Applies rotation if alpha != 0.
+ */
 void local_to_virt(float lx, float ly, float *vx, float *vy) { 
-    // Input: lx, ly (Locali Ncurses: 0,0 in alto a sx)
     float x = lx;
     float y = ly; 
 
-    // Applica rotazione SOLO se necessaria (se alpha != 0)
     if(alpha != 0.0f) {
         float cos_a = cosf(alpha);
         float sin_a = sinf(alpha);
@@ -89,12 +107,12 @@ void local_to_virt(float lx, float ly, float *vx, float *vy) {
     *vy = y;
 }
 
+/* * Converts Virtual Coordinates (Shared World) back to Local Coordinates (Screen pixels).
+ */
 void virt_to_local(float vx, float vy, float *lx, float *ly) { 
-    // Input: vx, vy (Virtuali)
     float x = vx;
     float y = vy;
 
-    // Applica rotazione inversa SOLO se necessaria
     if(alpha != 0.0f) {
         float cos_a = cosf(-alpha);
         float sin_a = sinf(-alpha);
@@ -107,37 +125,45 @@ void virt_to_local(float vx, float vy, float *lx, float *ly) {
     *ly = y;
 }
 
+/* Sets a file descriptor to Non-Blocking mode used for select() multiplexing */
 void set_nonblocking(int fd) {
     int flags = fcntl(fd, F_GETFL, 0);
     if (flags != -1) fcntl(fd, F_SETFL, flags | O_NONBLOCK);
     logMessage(LOG_PATH_SC, "[NET] FD %d set to non-blocking", fd);
 }
 
-// --- FUNZIONE CHIAVE PER INVIO CON \n ---
+
+/* * ======================================================================================
+ * MACRO-SECTION 3: LOW-LEVEL I/O AND PARSING
+ * ======================================================================================
+ * Functions handling raw socket reads/writes, ensuring strict newline delimitation.
+ */
+
+/* * Formats and sends a message ensuring strict Protocol adherence.
+ * The protocol requires every message to end with '\n'.
+ */
 void send_msg(int fd, const char *fmt, ...) {
     char buf[BUFSZ];
     va_list args;
     
-    // 1. Format stringa nel buffer, lasciando spazio per \n e \0
+    // 1. Format string into buffer
     va_start(args, fmt);
-    // Usiamo sizeof(buf) - 2 per garantire spazio per '\n' e '\0'
-    vsnprintf(buf, sizeof(buf) - 2, fmt, args);
+    vsnprintf(buf, sizeof(buf) - 2, fmt, args); // Reserve space for \n and \0
     va_end(args);
 
     int len = strlen(buf);
     
-    // 2. Logghiamo il contenuto "pulito" (senza ancora il newline forzato se manca)
+    // 2. Log raw data before modification
     logMessage(LOG_PATH_SC, "[NET-OUT] Sending raw data: '%s'", buf);
 
-    // 3. FORCE NEWLINE: Se non c'è, lo aggiungiamo.
-    // Il protocollo richiede \n come terminatore, non \0.
+    // 3. FORCE NEWLINE: The protocol relies on \n to detect end of message
     if (len == 0 || buf[len-1] != '\n') {
         buf[len] = '\n';
-        buf[len+1] = '\0'; // Terminatore C solo per sicurezza locale
+        buf[len+1] = '\0'; 
         len++;
     }
 
-    // 4. WRITE: Scriviamo 'len' byte. 
+    // 4. Write to socket
     ssize_t sent = write(fd, buf, len);
     
     if (sent < 0) {
@@ -146,14 +172,15 @@ void send_msg(int fd, const char *fmt, ...) {
     }
 }
 
-// --- RICEZIONE E PARSING TRAMITE \n ---
-
+/* * Reads raw bytes from the socket into the persistent buffer `sock_buf`.
+ * Returns 1 if data read, 0 if buffer full, -1 if connection closed.
+ */
 int read_socket_chunk(int fd) {
     if (sock_buf.len >= BUFSZ - 1) {
         logMessage(LOG_PATH_SC, "[NET-ERR] Buffer full! Cannot read more.");
         return 0; 
     }
-    // Leggiamo byte grezzi dalla rete
+    
     ssize_t n = read(fd, sock_buf.data + sock_buf.len, BUFSZ - 1 - sock_buf.len);
     if (n > 0) {
         sock_buf.len += n;
@@ -164,25 +191,25 @@ int read_socket_chunk(int fd) {
     return (n == 0) ? -1 : 0;
 }
 
+/* * Extracts a single line from `sock_buf` based on the newline delimiter.
+ * Returns 1 if a line was found and extracted, 0 otherwise.
+ */
 int get_line_from_buffer(char *out_line, int max_len) {
-    // Cerchiamo ESPLICITAMENTE il newline
     char *newline_ptr = strchr(sock_buf.data, '\n');
     
     if (newline_ptr) {
-        // Calcoliamo la lunghezza della riga ESCLUDENDO il \n
+        // Calculate line length excluding the newline
         int line_len = newline_ptr - sock_buf.data;
         
         if (line_len >= max_len) line_len = max_len - 1;
         
-        // Copiamo i dati utili
+        // Copy the line
         memcpy(out_line, sock_buf.data, line_len);
-        
-        // Aggiungiamo \0 locale per poter usare sscanf
-        out_line[line_len] = '\0';
+        out_line[line_len] = '\0'; // Null-terminate for C string safety
         
         logMessage(LOG_PATH_SC, "[NET-PARSE] Extracted line (via \\n): '%s'", out_line);
 
-        // Spostiamo il resto del buffer (saltando il \n appena processato)
+        // Shift remaining data in buffer to the front
         int remaining = sock_buf.len - (newline_ptr - sock_buf.data) - 1;
         memmove(sock_buf.data, newline_ptr + 1, remaining);
         sock_buf.len = remaining;
@@ -192,20 +219,28 @@ int get_line_from_buffer(char *out_line, int max_len) {
     return 0;
 }
 
-// Lettura bloccante byte per byte fino a \n (per handshake)
+/* * Blocking Read (Used only during initial Handshake).
+ * Reads byte-by-byte until a newline is found.
+ */
 int read_line_blocking(int fd, char *out, int out_sz) {
     int pos = 0; char c;
     while (pos < out_sz - 1) {
         if (read(fd, &c, 1) <= 0) return -1;
-        if (c == '\n') break; // Stop al newline
+        if (c == '\n') break; 
         out[pos++] = c;
     }
-    out[pos] = '\0'; // Null-terminate locale
+    out[pos] = '\0'; 
     logMessage(LOG_PATH_SC, "[HANDSHAKE] Blocking read: '%s'", out);
     return pos;
 }
 
-// --- CONNESSIONE & HANDSHAKE ---
+
+/* * ======================================================================================
+ * MACRO-SECTION 4: CONNECTION AND HANDSHAKE
+ * ======================================================================================
+ * Functions to initialize sockets (Bind/Listen or Connect) and perform the
+ * initial strict protocol handshake to sync Client/Server.
+ */
 
 int init_server(int port) {
     int s = socket(AF_INET, SOCK_STREAM, 0);
@@ -244,6 +279,7 @@ int init_client(const char *addr, int port) {
     return s;
 }
 
+/* Helpers for Blackboard Communication */
 void send_window_size(int fd_out, int w, int h) {
     Message msg; msg.type = MSG_TYPE_SIZE;
     snprintf(msg.data, sizeof(msg.data), "%d %d", w, h);
@@ -266,6 +302,11 @@ void update_local_position(int fd_in) {
     }
 }
 
+/* * The Handshake Logic:
+ * 1. Server sends "ok" -> Client confirms with "ook".
+ * 2. Server sends "size W H" -> Client confirms with "sok W H".
+ * 3. Client adapts local window size to match Server.
+ */
 int protocol_handshake(int mode, int fd, int *w, int *h, int fd_bb_out) {
     char buf[BUFSZ];
     logMessage(LOG_PATH_SC, "[HANDSHAKE] Start Mode: %s", mode == MODE_SERVER ? "SERVER" : "CLIENT");
@@ -295,16 +336,24 @@ int protocol_handshake(int mode, int fd, int *w, int *h, int fd_bb_out) {
         send_msg(fd, "sok %d %d", *w, *h); 
     }
     
+    // Set initial state based on Role
     net_state = (mode == MODE_SERVER) ? SV_SEND_CMD_DRONE : CL_WAIT_COMMAND;
     logMessage(LOG_PATH_SC, "[HANDSHAKE] Done. State: %s", state_to_str(net_state));
     return 0;
 }
 
-// --- MAIN LOOP ---
+
+/* * ======================================================================================
+ * MACRO-SECTION 5: MAIN LOGIC LOOP (STATE MACHINE)
+ * ======================================================================================
+ * The core loop that multiplexes between Network I/O and Blackboard I/O using select().
+ * Implements the NetState state machine.
+ */
 
 void network_loop(int mode, int fd_bb_in, int fd_bb_out) {
     char net_line[BUFSZ];
-    // FIX: Variables declared here
+    
+    // Logic Variables
     float rx, ry; 
     float vx, vy; 
     float remote_x, remote_y;
@@ -316,12 +365,15 @@ void network_loop(int mode, int fd_bb_in, int fd_bb_out) {
     set_nonblocking(fd_bb_in);
 
     while (1) {
+        // --- 1. Prepare Select ---
         FD_ZERO(&read_fds);
         FD_SET(net_fd, &read_fds);
         FD_SET(fd_bb_in, &read_fds);
         
         int max_fd = (net_fd > fd_bb_in) ? net_fd : fd_bb_in;
         int has_buf = (strchr(sock_buf.data, '\n') != NULL);
+        
+        // If we already have a full line in buffer, immediate timeout (0), else wait briefly
         timeout.tv_sec = 0;
         timeout.tv_usec = has_buf ? 0 : 2000; 
 
@@ -330,8 +382,12 @@ void network_loop(int mode, int fd_bb_in, int fd_bb_out) {
              break;
         }
 
+        // --- 2. Handle Inputs ---
+        
+        // Read local position from Blackboard
         if (FD_ISSET(fd_bb_in, &read_fds)) update_local_position(fd_bb_in);
 
+        // Read raw data from Network into buffer
         if (FD_ISSET(net_fd, &read_fds)) {
             if (read_socket_chunk(net_fd) == -1) {
                 logMessage(LOG_PATH_SC, "[NET] Socket closed.");
@@ -339,6 +395,7 @@ void network_loop(int mode, int fd_bb_in, int fd_bb_out) {
             }
         }
 
+        // --- 3. Process State Machine ---
         int state_changed;
         do {
             state_changed = 0;
@@ -351,9 +408,8 @@ void network_loop(int mode, int fd_bb_in, int fd_bb_out) {
                         state_changed = 1; 
                         break;
                     case SV_SEND_DATA_DRONE:
-                        // Convert Local to Virtual
+                        // Convert Local to Virtual coords for transmission
                         local_to_virt(my_last_x, my_last_y, &vx, &vy);
-                        // FIX: Send Virtual coordinates (vx, vy), not local
                         send_msg(net_fd, "%f %f", vx, vy);
                         net_state = SV_WAIT_DOK;
                         break;
@@ -375,20 +431,22 @@ void network_loop(int mode, int fd_bb_in, int fd_bb_out) {
                             if (sscanf(net_line, "%f %f", &rx, &ry) == 2) {
                                 logMessage(LOG_PATH_SC, "[SV] << Obst Data");
                                 msg.type = MSG_TYPE_DRONE;
-                                // Convert received Virtual to Local for display
+                                // Convert Remote Virtual -> Local for display
                                 virt_to_local(rx, ry, &remote_x, &remote_y);
-                                // FIX: Write Local coordinates (remote_x, remote_y) to BB
+                                
+                                // Forward to Blackboard
                                 snprintf(msg.data, sizeof(msg.data), "%f %f", remote_x, remote_y);
                                 write(fd_bb_out, &msg, sizeof(msg));
+                                
                                 send_msg(net_fd, "pok %f %f", rx, ry);
                                 net_state = SV_SEND_CMD_DRONE;
                                 state_changed = 1; 
                             }
                         }
                         break;
-                    default: break; // FIX: Handled unhandled switch cases
+                    default: break; 
                 }
-            } else { // CLIENT
+            } else { // CLIENT LOGIC
                 switch (net_state) {
                     case CL_WAIT_COMMAND:
                         if (get_line_from_buffer(net_line, sizeof(net_line))) {
@@ -408,20 +466,21 @@ void network_loop(int mode, int fd_bb_in, int fd_bb_out) {
                         if (get_line_from_buffer(net_line, sizeof(net_line))) {
                             if (sscanf(net_line, "%f %f", &rx, &ry) == 2) {
                                 msg.type = MSG_TYPE_DRONE;
-                                // Convert received Virtual to Local for display
+                                // Convert Remote Virtual -> Local for display
                                 virt_to_local(rx, ry, &remote_x, &remote_y);
-                                // FIX: Write Local coordinates to BB
+                                
+                                // Forward to Blackboard
                                 snprintf(msg.data, sizeof(msg.data), "%f %f", remote_x, remote_y);
                                 write(fd_bb_out, &msg, sizeof(msg));
+                                
                                 send_msg(net_fd, "dok %f %f", rx, ry);
                                 net_state = CL_WAIT_COMMAND;
                             }
                         }
                         break;
                     case CL_SEND_OBST_DATA:
-                        // Convert Local to Virtual
+                        // Convert Local -> Virtual for transmission
                         local_to_virt(my_last_x, my_last_y, &vx, &vy);
-                        // FIX: Send Virtual coordinates
                         send_msg(net_fd, "%f %f", vx, vy);
                         net_state = CL_WAIT_POK;
                         break;
@@ -433,7 +492,7 @@ void network_loop(int mode, int fd_bb_in, int fd_bb_out) {
                             }
                         }
                         break;
-                    default: break; // FIX: Handled unhandled switch cases
+                    default: break; 
                 }
             }
         } while (state_changed);
@@ -444,10 +503,18 @@ exit_loop:
     logMessage(LOG_PATH_SC, "[NET] Loop finished.");
 }
 
+
+/* * ======================================================================================
+ * MACRO-SECTION 6: MAIN ENTRY POINT
+ * ======================================================================================
+ * Arguments parsing, Signal setup, and Initialization.
+ */
+
 int main(int argc, char *argv[]) {
-    signal(SIGPIPE, SIG_IGN); 
+    signal(SIGPIPE, SIG_IGN); // Prevent crash on broken pipe
     if (argc < 6) return 1;
 
+    // Parse Arguments
     int fd_bb_in = atoi(argv[1]);   
     int fd_bb_out = atoi(argv[2]);  
     int mode = atoi(argv[3]);
@@ -455,18 +522,22 @@ int main(int argc, char *argv[]) {
     int port = atoi(argv[5]);
     int w = 100, h = 100;
 
+    // Initialize Connection
     if (mode == MODE_SERVER) {
+        // Server needs the Window Size from Blackboard to send to Client
         receive_window_size(fd_bb_in, &w, &h);
         net_fd = init_server(port);
     } else {
         net_fd = init_client(addr, port);
     }
 
+    // Perform Handshake
     if (net_fd < 0 || protocol_handshake(mode, net_fd, &w, &h, fd_bb_out) < 0) {
         logMessage(LOG_PATH_SC, "[NET-FATAL] Init Failed.");
         return 1;
     }
 
+    // Start Main Loop
     network_loop(mode, fd_bb_in, fd_bb_out);
     return 0;
 }

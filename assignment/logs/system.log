@@ -1,24 +1,43 @@
-[2026-01-15 21:36:31] (PID 12045) [MAIN] PROGRAM STARTED
-[2026-01-15 21:36:42] (PID 12045) [MAIN] Starting in MODE: 1
-[2026-01-15 21:36:42] (PID 12045) [MAIN] Pipes created successfully
-[2026-01-15 21:36:42] (PID 12045) [MAIN] All processes started (input=12108 drone=12110 bb=12109 obst=12111 targ=12112 watchdog=12113 network=-1)
-[2026-01-15 21:36:42] (PID 12111) [OBST] Started
-[2026-01-15 21:36:42] (PID 12111) [OBST] Waiting for Watchdog...
-[2026-01-15 21:36:42] (PID 12112) [TARG] Started with PID: 12112
-[2026-01-15 21:36:42] (PID 12112) [TARG] Waiting for Watchdog...
-[2026-01-15 21:36:43] (PID 12151) [BB] FDs: input=3 drone=7 obst=10 target=14 wd=18 network=21
-[2026-01-15 21:36:43] (PID 12151) [BB] Waiting for Watchdog...
-[2026-01-15 21:36:43] (PID 12151) [BB] Watchdog found (PID 12152)
-[2026-01-15 21:36:43] (PID 12151) [BB] PID published securely
-[2026-01-15 21:36:43] (PID 12151) [BB] Window Resized to: 100x27
-[2026-01-15 21:36:43] (PID 12151) [BB] Ready and GUI started
-[2026-01-15 21:36:43] (PID 12110) [DRONE] Spawned at 50.00 13.50
-[2026-01-15 21:36:43] (PID 12111) [OBST] Watchdog found (PID 12152)
-[2026-01-15 21:36:43] (PID 12112) [TARG] Watchdog found (PID 12152)
-[2026-01-15 21:36:43] (PID 12111) [OBST] PID published securely
-[2026-01-15 21:36:43] (PID 12111) [OBST] Generated 12 obstacles
-[2026-01-15 21:36:43] (PID 12112) [TARG] PID published securely
-[2026-01-15 21:36:43] (PID 12151) [BB] received 12 obstacles
-[2026-01-15 21:36:43] (PID 12112) [TARG] Generated 2 targets
-[2026-01-15 21:38:12] (PID 12112) [TARG] Pipe closed, exiting.
-[2026-01-15 21:38:12] (PID 12111) [OBST] Pipe closed, exiting.
+[2026-01-17 14:58:52] (PID 5623) [MAIN] PROGRAM STARTED
+[2026-01-17 14:59:00] (PID 5623) [MAIN] Starting in MODE: 1
+[2026-01-17 14:59:00] (PID 5623) [MAIN] Pipes created successfully
+[2026-01-17 14:59:00] (PID 5623) [MAIN] All processes started (input=5624 drone=5626 bb=5625 obst=5627 targ=5628 watchdog=5629 network=-1)
+[2026-01-17 14:59:00] (PID 5627) [OBST] Started
+[2026-01-17 14:59:00] (PID 5627) [OBST] Waiting for Watchdog...
+[2026-01-17 14:59:00] (PID 5628) [TARG] Started with PID: 5628
+[2026-01-17 14:59:00] (PID 5628) [TARG] Waiting for Watchdog...
+[2026-01-17 14:59:06] (PID 5682) [BB] FDs: input=3 drone=7 obst=10 target=14 wd=18 network=21
+[2026-01-17 14:59:06] (PID 5682) [BB] Waiting for Watchdog...
+[2026-01-17 14:59:06] (PID 5628) [TARG] Watchdog found (PID 5680)
+[2026-01-17 14:59:06] (PID 5628) [TARG] PID published securely
+[2026-01-17 14:59:06] (PID 5627) [OBST] Watchdog found (PID 5680)
+[2026-01-17 14:59:06] (PID 5627) [OBST] PID published securely
+[2026-01-17 14:59:07] (PID 5682) [BB] Watchdog found (PID 5680)
+[2026-01-17 14:59:07] (PID 5682) [BB] PID published securely
+[2026-01-17 14:59:07] (PID 5682) [BB] Window Resized to: 68x17
+[2026-01-17 14:59:07] (PID 5682) [BB] Ready and GUI started
+[2026-01-17 14:59:07] (PID 5627) [OBST] Generated 5 obstacles
+[2026-01-17 14:59:07] (PID 5626) [DRONE] Spawned at 34.00 8.50
+[2026-01-17 14:59:07] (PID 5682) [BB] received 5 obstacles
+[2026-01-17 14:59:07] (PID 5628) [TARG] Generated 1 targets
+[2026-01-17 14:59:24] (PID 5682) [BB] Expected target reached
+[2026-01-17 14:59:24] (PID 5682) [BB] ALL TARGETS CLEARED
+[2026-01-17 14:59:24] (PID 5628) [TARG] Generated 1 targets
+[2026-01-17 14:59:30] (PID 5682) [BB] Expected target reached
+[2026-01-17 14:59:30] (PID 5682) [BB] ALL TARGETS CLEARED
+[2026-01-17 14:59:30] (PID 5628) [TARG] Generated 1 targets
+[2026-01-17 14:59:37] (PID 5682) [BB] Expected target reached
+[2026-01-17 14:59:37] (PID 5682) [BB] ALL TARGETS CLEARED
+[2026-01-17 14:59:37] (PID 5628) [TARG] Generated 1 targets
+[2026-01-17 14:59:46] (PID 5682) [BB] Expected target reached
+[2026-01-17 14:59:46] (PID 5682) [BB] ALL TARGETS CLEARED
+[2026-01-17 14:59:46] (PID 5628) [TARG] Generated 1 targets
+[2026-01-17 14:59:58] (PID 5682) [BB] Expected target reached
+[2026-01-17 14:59:58] (PID 5682) [BB] ALL TARGETS CLEARED
+[2026-01-17 14:59:58] (PID 5628) [TARG] Generated 1 targets
+[2026-01-17 15:00:00] (PID 5682) [BB] Expected target reached
+[2026-01-17 15:00:00] (PID 5682) [BB] ALL TARGETS CLEARED
+[2026-01-17 15:00:00] (PID 5628) [TARG] Generated 1 targets
+[2026-01-17 15:00:04] (PID 5628) [DRONE] Received EXIT signal. Shutting down.
+[2026-01-17 15:00:04] (PID 5627) [DRONE] Received EXIT signal. Shutting down.
+[2026-01-17 15:00:04] (PID 5626) [DRONE] Received EXIT signal. Shutting down.
